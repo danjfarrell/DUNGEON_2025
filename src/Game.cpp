@@ -11,6 +11,16 @@ Game::~Game() {
 
 void Game::init() {
     running = true;
+
+    if (!tiles_.load(renderer, "assets/tiles/tileset.png")) {
+        std::cerr << "[tileset load failed] ensure assets/tiles/tileset.png exists\n";
+        running = false; return;
+    }
+    if (!map_.loadFromFile("assets/maps/level1.txt")) {
+        std::cerr << "[map load failed] assets/maps/level1.txt\n";
+        running = false; return;
+    }
+
 }
 
 //    // Load tileset
@@ -57,7 +67,7 @@ void Game::run() {
         handleEvents();
         update();
         render();
-        SDL_Delay(16);  // ~60 FPS (basic timing)
+        //SDL_Delay(16);  // ~60 FPS (basic timing)
     }
 }
 
@@ -71,6 +81,12 @@ void Game::handleEvents() {
         if (event.type == SDL_EVENT_QUIT) {
             running = false;
         }
+        if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
+                running = false;
+            }
+        }
+
     }
 }
 
@@ -111,6 +127,8 @@ void Game::update() {
 void Game::render() {
    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
    SDL_RenderClear(renderer);
+
+   map_.render(renderer, tiles_, atlas_);
 //
 //    map.render(renderer, tiles, atlas);
 //    for (const auto& e : enemies) {
@@ -125,6 +143,6 @@ void Game::render() {
 }
 
 void Game::cleanup() {
-//    tiles.cleanup();
+    tiles_.cleanup();
 //    // No SDL_Quit or TTF_Quit here — done in main
 }

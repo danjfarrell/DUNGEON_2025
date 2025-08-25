@@ -28,11 +28,11 @@ private:
 
     //Input input;
     //Renderer screen;
-    //TileSheet tiles;
-    //Map map;
+    TileSheet tiles_;
+    Map map_;
     //Player player;
     //Hud hud;
-    //TileAtlas atlas;
+    TileAtlas atlas_;
     //std::vector<Enemy> enemies;
 
     void init();
