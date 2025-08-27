@@ -30,8 +30,8 @@ private:
     //Renderer screen;
     TileSheet tiles_;
     Map map_;
-    //Player player;
-    //Hud hud;
+    Player player_;
+    Hud hud_;
     TileAtlas atlas_;
     //std::vector<Enemy> enemies;
 

@@ -20,45 +20,21 @@ void Game::init() {
         std::cerr << "[map load failed] assets/maps/level1.txt\n";
         running = false; return;
     }
+    if (!hud_.loadFont("assets/fonts/OpenSans-Regular.ttf", 16)) {
+        SDL_Log("[font missing] assets/fonts/OpenSans-Regular.ttf");
+        // continue without text
+    }
 
+    player_.setPosition(2, 2);
+
+    // place some items
+    map_.addItem(Item{ "Potion", ItemType::CONSUMABLE, 25 }, 4, 4);
+    map_.addItem(Item{ "Iron Key", ItemType::KEY, 0 }, 5, 5);
+    map_.addItem(Item{ "Fire Scroll", ItemType::SCROLL, 40 }, 6, 6);
 }
 
-//    // Load tileset
-//    if (!tiles.load(renderer, "assets/tiles/tileset.png")) {
-//        std::cerr << "Failed to load tileset\n";
-//        running = false;
-//        return;
-//    }
-//
-//    // Load tile atlas (JSON-based — coming soon)
-//    if (!atlas.loadFromFile("assets/config/tilemap.json")) {
-//        std::cerr << "Failed to load tile atlas\n";
-//        running = false;
-//        return;
-//    }
-//
-//    // Load font
-//    if (!hud.loadFont("assets/fonts/OpenSans-Regular.ttf", 16)) {
-//        std::cerr << "Failed to load font\n";
-//        running = false;
-//        return;
-//    }
-//
-//    // Load map
-//    if (!map.loadFromFile("assets/maps/level1.txt")) {
-//        std::cerr << "Failed to load map\n";
-//        running = false;
-//        return;
-//    }
-//
-//    // Place initial items and enemies
-//    map.addItem(Item("Potion", ItemType::CONSUMABLE, 25), 3, 3);
-//    map.addItem(Item("Fire Scroll", ItemType::SCROLL, 30), 4, 4);
-//    map.addItem(Item("Iron Key", ItemType::KEY), 5, 5);
-//
-//    enemies.emplace_back(Enemy(6, 6, 20));
-//}
-//
+
+
 void Game::run() {
     init();
     if (!running) return;
@@ -84,6 +60,29 @@ void Game::handleEvents() {
         if (event.type == SDL_EVENT_KEY_DOWN) {
             if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
                 running = false;
+            }
+            // tile-step movement on key press
+            if (event.key.scancode == SDL_SCANCODE_UP)    player_.move(0, -1, map_);
+            if (event.key.scancode == SDL_SCANCODE_DOWN)  player_.move(0, 1, map_);
+            if (event.key.scancode == SDL_SCANCODE_LEFT)  player_.move(-1, 0, map_);
+            if (event.key.scancode == SDL_SCANCODE_RIGHT) player_.move(1, 0, map_);
+        }
+
+        // after movement: check pickup
+        int idx = map_.itemIndexAt(player_.getX(), player_.getY());
+        if (idx != -1) {
+            const auto& wi = map_.items()[idx];
+            player_.inventory().add(wi.item);
+            map_.removeItemAt(idx);
+        }
+
+        // quick test: use item 1 to heal if it's a potion
+        if (event.key.scancode == SDL_SCANCODE_1) {
+            auto& inv = player_.inventory();
+            const auto& items = inv.items();
+            if (!items.empty() && items[0].type == ItemType::CONSUMABLE) {
+                player_.setHealth(std::min(100, player_.getHealth() + items[0].value));
+                inv.remove(0);
             }
         }
 
@@ -129,16 +128,16 @@ void Game::render() {
    SDL_RenderClear(renderer);
 
    map_.render(renderer, tiles_, atlas_);
+   player_.render(renderer, tiles_, atlas_);
+   hud_.render(renderer, player_);
+
 //
 //    map.render(renderer, tiles, atlas);
 //    for (const auto& e : enemies) {
 //        tiles.renderTile(atlas.getTileX("enemy"), atlas.getTileY("enemy"),
 //            e.getX() * TILE_WIDTH, e.getY() * TILE_HEIGHT, renderer);
 //    }
-//
-//    player.render(renderer, tiles, atlas);
-//    hud.render(renderer, player);
-//
+
     SDL_RenderPresent(renderer);
 }
 
