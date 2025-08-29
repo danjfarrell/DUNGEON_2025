@@ -12,25 +12,31 @@ Game::~Game() {
 void Game::init() {
     running = true;
 
-    if (!tiles_.load(renderer, "assets/tiles/tileset.png")) {
+    //SDL_SetRenderScale(renderer, 2.0f, 2.0f);
+    //cam.init(screenW, screenH, 2.0f);  // keep camera in sync
+    cam.init(screenW, screenH, 1.0f);  // keep camera in sync
+
+    if (!tiles.load(renderer, "assets/tiles/tileset.png")) {
         std::cerr << "[tileset load failed] ensure assets/tiles/tileset.png exists\n";
         running = false; return;
     }
-    if (!map_.loadFromFile("assets/maps/level1.txt")) {
+    if (!map.loadFromFile("assets/maps/level1.txt")) {
         std::cerr << "[map load failed] assets/maps/level1.txt\n";
         running = false; return;
     }
-    if (!hud_.loadFont("assets/fonts/OpenSans-Regular.ttf", 16)) {
+    if (!hud.loadFont("assets/fonts/OpenSans-Regular.ttf", 16)) {
         SDL_Log("[font missing] assets/fonts/OpenSans-Regular.ttf");
         // continue without text
     }
 
-    player_.setPosition(2, 2);
+    player.setPosition(2, 2);
+
+    cam.centerOn(player.getX(), player.getY(), map.width(), map.height());
 
     // place some items
-    map_.addItem(Item{ "Potion", ItemType::CONSUMABLE, 25 }, 4, 4);
-    map_.addItem(Item{ "Iron Key", ItemType::KEY, 0 }, 5, 5);
-    map_.addItem(Item{ "Fire Scroll", ItemType::SCROLL, 40 }, 6, 6);
+    map.addItem(Item{ "Potion", ItemType::CONSUMABLE, 25 }, 4, 4);
+    map.addItem(Item{ "Iron Key", ItemType::KEY, 0 }, 5, 5);
+    map.addItem(Item{ "Fire Scroll", ItemType::SCROLL, 40 }, 6, 6);
 }
 
 
@@ -48,40 +54,47 @@ void Game::run() {
 }
 
 void Game::handleEvents() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
         //input.processEvent(event);
 
 
 
-        if (event.type == SDL_EVENT_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             running = false;
         }
-        if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
+        if (e.type == SDL_EVENT_KEY_DOWN) {
+            if (e.key.scancode == SDL_SCANCODE_ESCAPE) {
                 running = false;
             }
-            // tile-step movement on key press
-            if (event.key.scancode == SDL_SCANCODE_UP)    player_.move(0, -1, map_);
-            if (event.key.scancode == SDL_SCANCODE_DOWN)  player_.move(0, 1, map_);
-            if (event.key.scancode == SDL_SCANCODE_LEFT)  player_.move(-1, 0, map_);
-            if (event.key.scancode == SDL_SCANCODE_RIGHT) player_.move(1, 0, map_);
+            else if (e.key.scancode == SDL_SCANCODE_UP) {
+                player.move(0, -1, map);
+            }
+            else if (e.key.scancode == SDL_SCANCODE_DOWN) {
+                player.move(0, 1, map);
+            }
+            else if (e.key.scancode == SDL_SCANCODE_LEFT) {
+                player.move(-1, 0, map);
+            }
+            else if (e.key.scancode == SDL_SCANCODE_RIGHT) {
+                player.move(1, 0, map);
+            }
         }
 
         // after movement: check pickup
-        int idx = map_.itemIndexAt(player_.getX(), player_.getY());
+        int idx = map.itemIndexAt(player.getX(), player.getY());
         if (idx != -1) {
-            const auto& wi = map_.items()[idx];
-            player_.inventory().add(wi.item);
-            map_.removeItemAt(idx);
+            const auto& wi = map.items()[idx];
+            player.inventory().add(wi.item);
+            map.removeItemAt(idx);
         }
 
-        // quick test: use item 1 to heal if it's a potion
-        if (event.key.scancode == SDL_SCANCODE_1) {
-            auto& inv = player_.inventory();
-            const auto& items = inv.items();
-            if (!items.empty() && items[0].type == ItemType::CONSUMABLE) {
-                player_.setHealth(std::min(100, player_.getHealth() + items[0].value));
+        // Optional quick-use: press '1' to consume first item if it's a potion.
+        if (e.key.scancode == SDL_SCANCODE_1) {
+            auto& inv = player.inventory();
+            const auto& list = inv.items();
+            if (!list.empty() && list[0].type == ItemType::CONSUMABLE) {
+                player.setHealth(std::min(100, player.getHealth() + list[0].value));
                 inv.remove(0);
             }
         }
@@ -90,46 +103,16 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-//    input.update();
-//
-//    // Movement input (arrow keys)
-//    const Uint8* keys = SDL_GetKeyboardState(nullptr);
-//    if (keys[SDL_SCANCODE_UP])    player.move(0, -1, map, enemies);
-//    if (keys[SDL_SCANCODE_DOWN])  player.move(0, 1, map, enemies);
-//    if (keys[SDL_SCANCODE_LEFT])  player.move(-1, 0, map, enemies);
-//    if (keys[SDL_SCANCODE_RIGHT]) player.move(1, 0, map, enemies);
-//
-//    // Select inventory slot
-//    for (int i = 0; i < 5; ++i) {
-//        if (keys[SDL_SCANCODE_1 + i]) {
-//            player.setSelectedSlot(i);
-//        }
-//    }
-//
-//    // Use selected item
-//    auto& inv = player.getInventory();
-//    const auto& items = inv.getItems();
-//    int sel = player.getSelectedSlot();
-//    if (sel < items.size()) {
-//        const Item& item = items[sel];
-//        if (item.getType() == ItemType::CONSUMABLE) {
-//            player.setHealth(player.getHealth() + item.getValue());
-//            inv.removeItem(sel);
-//        }
-//        else if (item.getType() == ItemType::SCROLL) {
-//            if (!enemies.empty()) enemies.erase(enemies.begin());  // simulate kill
-//            inv.removeItem(sel);
-//        }
-//    }
+    cam.centerOn(player.getX(), player.getY(), map.width(), map.height());
 }
 
 void Game::render() {
    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
    SDL_RenderClear(renderer);
 
-   map_.render(renderer, tiles_, atlas_);
-   player_.render(renderer, tiles_, atlas_);
-   hud_.render(renderer, player_);
+   map.render(renderer, tiles, atlas,cam);
+   player.render(renderer, tiles, atlas,cam);
+   hud.render(renderer, player);
 
 //
 //    map.render(renderer, tiles, atlas);
@@ -142,6 +125,6 @@ void Game::render() {
 }
 
 void Game::cleanup() {
-    tiles_.cleanup();
+    tiles.cleanup();
 //    // No SDL_Quit or TTF_Quit here — done in main
 }

@@ -10,7 +10,9 @@ class Player {
 public:
     void setPosition(int tx, int ty) { x = tx; y = ty; }
     void move(int dx, int dy, const Map& map);
-    void render(SDL_Renderer* r, TileSheet& tiles, const TileAtlas& atlas) const;
+    //void render(SDL_Renderer* r, TileSheet& tiles, const TileAtlas& atlas) const;
+    void render(SDL_Renderer* r, TileSheet& tiles, const TileAtlas& atlas, const Camera& cam) const;
+
 
     int getX() const { return x; }
     int getY() const { return y; }

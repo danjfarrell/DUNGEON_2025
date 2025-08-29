@@ -12,6 +12,6 @@ public:
 private:
     TTF_Font* font = nullptr;
     void drawText(SDL_Renderer* r, const std::string& text, int x, int y);
-    void renderInventory(SDL_Renderer* r, const Player& p);
+    void renderInventory(SDL_Renderer* r, const Player& player, int originX, int originY);
 };
 

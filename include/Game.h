@@ -10,6 +10,8 @@
 #include "Hud.h"
 #include "TileAtlas.h"
 #include "Enemy.h"
+#include "Camera.h"
+
 
 #include <vector>
 
@@ -26,13 +28,16 @@ private:
 
     bool running = false;
 
+    int screenW = 800, screenH = 600;
+    Camera cam;
+
     //Input input;
     //Renderer screen;
-    TileSheet tiles_;
-    Map map_;
-    Player player_;
-    Hud hud_;
-    TileAtlas atlas_;
+    TileSheet tiles;
+    Map map;
+    Player player;
+    Hud hud;
+    TileAtlas atlas;
     //std::vector<Enemy> enemies;
 
     void init();
