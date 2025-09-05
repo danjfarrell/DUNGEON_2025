@@ -1,3 +1,5 @@
+// CHANGES: none since last full view.
+
 #pragma once
 struct TileAtlas {
     int playerX = 0, playerY = 7;
@@ -6,4 +8,3 @@ struct TileAtlas {
     int floorX = 2, floorY = 0;
     int doorX = 3, doorY = 0;
 };
-

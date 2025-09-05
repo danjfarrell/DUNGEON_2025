@@ -1,9 +1,11 @@
+// CHANGES: none since last full view.
+
 #pragma once
 #include <algorithm>
 #include "TileSheet.h"
 
 struct Camera {
-    int x = 0, y = 0;     // top-left tile
+    int x = 0, y = 0;
     int wTiles = 0, hTiles = 0;
     float scale = 1.0f;
 
@@ -24,4 +26,3 @@ struct Camera {
         if (y + hTiles > mapH) y = std::max(0, mapH - hTiles);
     }
 };
-

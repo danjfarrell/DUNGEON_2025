@@ -1,3 +1,5 @@
+// CHANGES: none since last full view.
+
 #pragma once
 #include <SDL3/SDL.h>
 #include <string>
@@ -14,4 +16,3 @@ public:
 private:
     SDL_Texture* tex_ = nullptr;
 };
-

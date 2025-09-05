@@ -1,3 +1,6 @@
+// CHANGES since last full view:
+// - added renderInventory helper in previous step (kept). No new changes now.
+
 #pragma once
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -11,7 +14,7 @@ public:
 
 private:
     TTF_Font* font = nullptr;
+
     void drawText(SDL_Renderer* r, const std::string& text, int x, int y);
     void renderInventory(SDL_Renderer* r, const Player& player, int originX, int originY);
 };
-
