@@ -6,7 +6,11 @@
 
 bool Hud::loadFont(const std::string& path, int size) {
     font = TTF_OpenFont(path.c_str(), size);
-    return font != nullptr;
+    if (!font) {
+        SDL_Log("TTF_OpenFont failed: %s", SDL_GetError());
+        return false;
+    }
+    return true;
 }
 
 void Hud::drawText(SDL_Renderer* r, const std::string& text, int x, int y) {

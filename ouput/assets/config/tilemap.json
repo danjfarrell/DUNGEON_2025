@@ -1,28 +1,14 @@
 {
-  "player": {
-    "tileX": 0,
-    "tileY": 7
-  },
-  "enemy": {
-    "tileX": 1,
-    "tileY": 7
-  },
-  "wall": {
-    "tileX": 0,
-    "tileY": 0
-  },
-  "floor": {
-    "tileX": 2,
-    "tileY": 0
-  },
-  "door": {
-    "tileX": 3,
-    "tileY": 0
-  },
-  "items": {
-    "Potion": {
-      "tileX": 5,
-      "tileY": 0
-    }
+  "tilewidth": 16,
+  "tileheight": 16,
+  "tiles": {
+    "PLAYER": { "x": 0, "y": 7 },
+    "ENEMY":  { "x": 1, "y": 7 },
+    "WALL":   { "x": 0, "y": 0 },
+    "FLOOR":  { "x": 2, "y": 0 },
+    "DOOR":   { "x": 3, "y": 0 },
+    "POTION": { "x": 5, "y": 0 },
+    "KEY":    { "x": 6, "y": 0 },
+    "SCROLL": { "x": 7, "y": 0 }
   }
 }

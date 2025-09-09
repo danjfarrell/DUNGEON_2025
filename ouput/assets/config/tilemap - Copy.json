@@ -1,0 +1,28 @@
+{
+  "player": {
+    "tileX": 0,
+    "tileY": 7
+  },
+  "enemy": {
+    "tileX": 1,
+    "tileY": 7
+  },
+  "wall": {
+    "tileX": 0,
+    "tileY": 0
+  },
+  "floor": {
+    "tileX": 2,
+    "tileY": 0
+  },
+  "door": {
+    "tileX": 3,
+    "tileY": 0
+  },
+  "items": {
+    "Potion": {
+      "tileX": 5,
+      "tileY": 0
+    }
+  }
+}
