@@ -130,24 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Game.cpp" />
-    <ClCompile Include="src\Hud.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Map.cpp" />
-    <ClCompile Include="src\Player.cpp" />
-    <ClCompile Include="src\Tilesheet.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\Camera.h" />
-    <ClInclude Include="include\Game.h" />
-    <ClInclude Include="include\Hud.h" />
-    <ClInclude Include="include\Inventory.h" />
-    <ClInclude Include="include\Item.h" />
-    <ClInclude Include="include\Map.h" />
-    <ClInclude Include="include\Player.h" />
-    <ClInclude Include="include\Tileatlas.h" />
-    <ClInclude Include="include\Tilesheet.h" />
-    <ClInclude Include="include\Worlditem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
