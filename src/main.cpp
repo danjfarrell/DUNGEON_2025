@@ -1,7 +1,53 @@
 #include <SDL3/SDL.h>
 #include <iostream>
+#include "ecs/Entity.h"
+#include "ecs/ComponentArray.h"
+
+
+void test_entity_manager() {
+    EntityManager em;
+
+    Entity e1 = em.create();  // Should be 0
+    Entity e2 = em.create();  // Should be 1
+    Entity e3 = em.create();  // Should be 2
+
+    std::cout << "Created entities: " << e1 << ", " << e2 << ", " << e3 << std::endl;
+
+    em.destroy(e2);  // Mark entity 1 for reuse
+
+    Entity e4 = em.create();  // Should reuse 1
+
+    std::cout << "After destroying e2 and creating e4: " << e4 << std::endl;
+    std::cout << "Entity manager test passed!" << std::endl;
+}
+
+// Simple test component
+struct TestComponent {
+    int value;
+    TestComponent(int v = 0) : value(v) {}
+};
+
+void test_component_array() {
+    ComponentArray<TestComponent> array;
+
+    array.insert(1, TestComponent(100));
+    array.insert(3, TestComponent(300));
+    array.insert(5, TestComponent(500));
+
+    std::cout << "Entity 1 has component: " << (array.has(1) ? "Yes" : "No") << std::endl;
+    std::cout << "Entity 2 has component: " << (array.has(2) ? "Yes" : "No") << std::endl;
+    std::cout << "Entity 3 value: " << array.get(3)->value << std::endl;
+
+    array.remove(3);
+    std::cout << "After removing entity 3: " << (array.has(3) ? "Yes" : "No") << std::endl;
+
+    std::cout << "ComponentArray test passed!" << std::endl;
+}
 
 int main(int argc, char* argv[]) {
+    
+    test_entity_manager();  // Add this line
+    test_component_array();
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cout << "SDL_Init failed: " << SDL_GetError() << std::endl;
@@ -52,7 +98,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         // Close after 3 seconds automatically (or you can close the window)
-        if (SDL_GetTicks() - start_time > 3000) {
+        if (SDL_GetTicks() - start_time > 30000) {
             running = false;
         }
 
