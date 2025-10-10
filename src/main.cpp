@@ -2,6 +2,11 @@
 #include <iostream>
 #include "ecs/Entity.h"
 #include "ecs/ComponentArray.h"
+#include "ecs/ComponentManager.h"
+#include "ecs/World.h"
+#include "ecs/System.h"
+#include "components/Components.h"  // Add this at the top
+
 
 
 void test_entity_manager() {
@@ -44,10 +49,88 @@ void test_component_array() {
     std::cout << "ComponentArray test passed!" << std::endl;
 }
 
+void test_component_manager() {
+    ComponentManager cm;
+
+    // Create some test components
+    struct Position { int x, y; };
+    struct Health { int current, max; };
+
+    Entity player = 1;
+    Entity enemy = 2;
+
+    // Add different components to different entities
+    cm.add_component(player, Position{ 10, 20 });
+    cm.add_component(player, Health{ 100, 100 });
+
+    cm.add_component(enemy, Position{ 50, 50 });
+    // Enemy has no Health component
+
+    // Test retrieval
+    Position* player_pos = cm.get_component<Position>(player);
+    std::cout << "Player position: (" << player_pos->x << ", " << player_pos->y << ")" << std::endl;
+
+    // Test has_component
+    std::cout << "Player has Health: " << (cm.has_component<Health>(player) ? "Yes" : "No") << std::endl;
+    std::cout << "Enemy has Health: " << (cm.has_component<Health>(enemy) ? "Yes" : "No") << std::endl;
+
+    // Test modification
+    player_pos->x += 5;
+    std::cout << "After moving, player x: " << cm.get_component<Position>(player)->x << std::endl;
+
+    std::cout << "ComponentManager test passed!" << std::endl;
+}
+
+// Simple test system
+class TestSystem : public System {
+public:
+    void update(ComponentManager& components, float dt) override {
+        std::cout << "TestSystem::update called with dt=" << dt << std::endl;
+    }
+};
+
+
+
+
+void test_world() {
+    World world;
+
+    // Create entities with real components
+    Entity player = world.create_entity();
+    world.add_component(player, Position{ 10, 10 });
+    world.add_component(player, Renderable{ {255, 255, 0, 255}, '@', 10 });
+    world.add_component(player, Health{ 100, 100 });
+    world.add_component(player, PlayerControlled{});
+    world.add_component(player, Name{ "Hero" });
+
+    Entity goblin = world.create_entity();
+    world.add_component(goblin, Position{ 20, 15 });
+    world.add_component(goblin, Renderable{ {0, 255, 0, 255}, 'g', 5 });
+    world.add_component(goblin, Health{ 30, 30 });
+    world.add_component(goblin, AI{ AI::AGGRESSIVE, player });
+    world.add_component(goblin, BlocksMovement{});
+    world.add_component(goblin, Name{ "Goblin" });
+
+    // Test access
+    Position* pos = world.get_component<Position>(player);
+    Name* name = world.get_component<Name>(player);
+
+    std::cout << name->name << " is at (" << pos->x << ", " << pos->y << ")" << std::endl;
+    std::cout << "Player is player-controlled: "
+        << (world.has_component<PlayerControlled>(player) ? "Yes" : "No") << std::endl;
+    std::cout << "Goblin is player-controlled: "
+        << (world.has_component<PlayerControlled>(goblin) ? "Yes" : "No") << std::endl;
+
+    std::cout << "Component test passed!" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
     
     test_entity_manager();  // Add this line
     test_component_array();
+    test_component_manager();
+    test_world();  // Add this line
+
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cout << "SDL_Init failed: " << SDL_GetError() << std::endl;

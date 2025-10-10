@@ -18,6 +18,9 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ecs\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ecs\Entity.h">
@@ -27,6 +30,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ecs\ComponentManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ecs\World.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ecs\System.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Components.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
