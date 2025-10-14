@@ -148,6 +148,9 @@
     <ClInclude Include="src\systems\RenderSystem.h" />
     <ClInclude Include="src\systems\SpriteUpdateSystem.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ouput\assets\sprites.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
