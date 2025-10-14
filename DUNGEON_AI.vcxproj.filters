@@ -18,27 +18,45 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ecs\World.cpp">
+    <ClCompile Include="src\ecs\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\RenderingSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\SpriteUpdateSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ecs\Entity.h">
+    <ClInclude Include="src\ecs\ComponentArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ecs\ComponentArray.h">
+    <ClInclude Include="src\ecs\ComponentManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ecs\ComponentManager.h">
+    <ClInclude Include="src\ecs\Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ecs\World.h">
+    <ClInclude Include="src\ecs\System.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ecs\System.h">
+    <ClInclude Include="src\ecs\World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="components\Components.h">
+    <ClInclude Include="src\components\Components.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\RenderSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\SpriteConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\SpriteManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\SpriteUpdateSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

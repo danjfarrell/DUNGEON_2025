@@ -1,0 +1,129 @@
+{
+  "sprite_sheets": [
+    {
+      "id": 0,
+      "name": "demonic",
+      "file": "assets/tiles/demonic_dungeon_full_1.png"
+    },
+    {
+      "id": 1,
+      "name": "frozen",
+      "file": "assets/tiles/frozen_full.png"
+    },
+    {
+      "id": 2,
+      "name": "haunted",
+      "file": "assets/tiles/haunted_full.png"
+    }
+  ],
+  "sprites": {
+    "player.north": {
+      "sheet_id": 0,
+      "tile_x": 1,
+      "tile_y": 29,
+      "layer": 10
+    },
+    "player.south": {
+      "sheet_id": 0,
+      "tile_x": 1,
+      "tile_y": 30,
+      "layer": 10
+    },
+    "player.east": {
+      "sheet_id": 0,
+      "tile_x": 1,
+      "tile_y": 31,
+      "layer": 10
+    },
+    "player.west": {
+      "sheet_id": 0,
+      "tile_x": 1,
+      "tile_y": 32,
+      "layer": 10
+    },
+    "goblin.idle": {
+      "sheet_id": 0,
+      "tile_x": 0,
+      "tile_y": 17,
+      "layer": 5
+    },
+    "goblin.attack": {
+      "sheet_id": 0,
+      "tile_x": 0,
+      "tile_y": 17,
+      "layer": 5
+    },
+    "orc": {
+      "sheet_id": 0,
+      "tile_x": 4,
+      "tile_y": 18,
+      "layer": 5
+    },
+    "wall.stone": {
+      "sheet_id": 0,
+      "tile_x": 4,
+      "tile_y": 2,
+      "layer": 1
+    },
+    "wall.ice": {
+      "sheet_id": 1,
+      "tile_x": 0,
+      "tile_y": 1,
+      "layer": 1
+    },
+    "wall.haunted": {
+      "sheet_id": 2,
+      "tile_x": 0,
+      "tile_y": 2,
+      "layer": 1
+    },
+    "floor.stone": {
+      "sheet_id": 0,
+      "tile_x": 22,
+      "tile_y": 2,
+      "layer": 0
+    },
+    "floor.ice": {
+      "sheet_id": 0,
+      "tile_x": 21,
+      "tile_y": 1,
+      "layer": 0
+    },
+    "door.wooden": {
+      "sheet_id": 1,
+      "tile_x": 3,
+      "tile_y": 7,
+      "layer": 1
+    },
+    "door.iron": {
+      "sheet_id": 1,
+      "tile_x": 5,
+      "tile_y": 7,
+      "layer": 1
+    },
+    "potion.small": {
+      "sheet_id": 0,
+      "tile_x": 12,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "potion.large": {
+      "sheet_id": 0,
+      "tile_x": 12,
+      "tile_y": 18,
+      "layer": 3
+    },
+    "sword": {
+      "sheet_id": 0,
+      "tile_x": 18,
+      "tile_y": 18,
+      "layer": 3
+    },
+    "shield": {
+      "sheet_id": 0,
+      "tile_x": 16,
+      "tile_y": 19,
+      "layer": 3
+    }
+  }
+}
