@@ -14,31 +14,46 @@
       "id": 2,
       "name": "haunted",
       "file": "assets/tiles/haunted_full.png"
+    },
+    {
+      "id": 3,
+      "name": "demonic_caves",
+      "file": "assets/tiles/Cave.png"
+    },
+    {
+      "id": 4,
+      "name": "demonic_dungeons",
+      "file": "assets/tiles/Dungeon.png"
+    },
+    {
+      "id": 5,
+      "name": "demonic_heroes",
+      "file": "assets/tiles/Heroes_tp.png"
     }
   ],
   "sprites": {
     "player.north": {
-      "sheet_id": 0,
-      "tile_x": 1,
-      "tile_y": 29,
+      "sheet_id": 5,
+      "tile_x": 0,
+      "tile_y": 3,
       "layer": 10
     },
     "player.south": {
-      "sheet_id": 0,
-      "tile_x": 1,
-      "tile_y": 30,
+      "sheet_id": 5,
+      "tile_x": 0,
+      "tile_y": 3,
       "layer": 10
     },
     "player.east": {
-      "sheet_id": 0,
-      "tile_x": 1,
-      "tile_y": 31,
+      "sheet_id": 5,
+      "tile_x": 0,
+      "tile_y": 3,
       "layer": 10
     },
     "player.west": {
-      "sheet_id": 0,
-      "tile_x": 1,
-      "tile_y": 32,
+      "sheet_id": 5,
+      "tile_x": 0,
+      "tile_y": 3,
       "layer": 10
     },
     "goblin.idle": {
@@ -60,9 +75,9 @@
       "layer": 5
     },
     "wall.stone": {
-      "sheet_id": 0,
-      "tile_x": 4,
-      "tile_y": 2,
+      "sheet_id": 3,
+      "tile_x": 1,
+      "tile_y": 5,
       "layer": 1
     },
     "wall.ice": {
@@ -79,14 +94,14 @@
     },
     "floor.stone": {
       "sheet_id": 0,
-      "tile_x": 22,
+      "tile_x": 9,
       "tile_y": 2,
       "layer": 0
     },
     "floor.ice": {
       "sheet_id": 0,
-      "tile_x": 21,
-      "tile_y": 1,
+      "tile_x": 9,
+      "tile_y": 2,
       "layer": 0
     },
     "door.wooden": {

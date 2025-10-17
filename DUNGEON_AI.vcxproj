@@ -133,8 +133,11 @@
   <ItemGroup>
     <ClCompile Include="src\ecs\World.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\systems\MapRenderSystem.cpp" />
     <ClCompile Include="src\systems\RenderingSystem.cpp" />
     <ClCompile Include="src\systems\SpriteUpdateSystem.cpp" />
+    <ClCompile Include="src\world\Map.cpp" />
+    <ClCompile Include="src\world\MapGenerators.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\components\Components.h" />
@@ -145,8 +148,11 @@
     <ClInclude Include="src\ecs\World.h" />
     <ClInclude Include="src\graphics\SpriteConfig.h" />
     <ClInclude Include="src\graphics\SpriteManager.h" />
+    <ClInclude Include="src\systems\MapRenderSystem.h" />
     <ClInclude Include="src\systems\RenderSystem.h" />
     <ClInclude Include="src\systems\SpriteUpdateSystem.h" />
+    <ClInclude Include="src\world\Map.h" />
+    <ClInclude Include="src\world\MapGenerators.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json" />
