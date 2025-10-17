@@ -139,6 +139,29 @@
       "tile_x": 16,
       "tile_y": 19,
       "layer": 3
-    }
+    },
+	"wall.single": {"sheet_id": 3, "tile_x": 1, "tile_y": 2, "layer": 1},
+    "wall.horizontal": {"sheet_id": 3, "tile_x": 3, "tile_y": 0, "layer": 1},
+    "wall.vertical": {"sheet_id": 3, "tile_x": 4, "tile_y": 1, "layer": 1},
+    
+    "wall.corner.nw": {"sheet_id": 3, "tile_x": 2, "tile_y": 0, "layer": 1},
+    "wall.corner.ne": {"sheet_id": 3, "tile_x": 4, "tile_y": 0, "layer": 1},
+    "wall.corner.sw": {"sheet_id": 3, "tile_x": 2, "tile_y": 2, "layer": 1},
+    "wall.corner.se": {"sheet_id": 3, "tile_x": 4, "tile_y": 1, "layer": 1},
+    
+    "wall.t.north": {"sheet_id": 3, "tile_x": 1, "tile_y": 2, "layer": 1},
+    "wall.t.south": {"sheet_id": 3, "tile_x": 0, "tile_y": 2, "layer": 1},
+    "wall.t.east": {"sheet_id": 3, "tile_x": 3, "tile_y": 1, "layer": 1},
+    "wall.t.west": {"sheet_id": 3, "tile_x": 2, "tile_y": 2, "layer": 1},
+    
+    "wall.cross": {"sheet_id": 3, "tile_x": 6, "tile_y": 0, "layer": 1},
+    
+    "wall.end.north": {"sheet_id": 3, "tile_x": 1, "tile_y": 2, "layer": 1},
+    "wall.end.south": {"sheet_id": 3, "tile_x": 40 "tile_y": 2, "layer": 1},
+    "wall.end.east": {"sheet_id": 3, "tile_x": 3, "tile_y": 1, "layer": 1},
+    "wall.end.west": {"sheet_id": 3, "tile_x": 2, "tile_y": 2, "layer": 1},
+    
+    "door.closed": {"sheet_id": 3, "tile_x": 6, "tile_y": 2, "layer": 1},
+    "door.open": {"sheet_id": 3, "tile_x": 6, "tile_y": 5, "layer": 1},
   }
 }
