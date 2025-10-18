@@ -151,6 +151,7 @@
     <ClInclude Include="src\systems\MapRenderSystem.h" />
     <ClInclude Include="src\systems\RenderSystem.h" />
     <ClInclude Include="src\systems\SpriteUpdateSystem.h" />
+    <ClInclude Include="src\utils\Logger.h" />
     <ClInclude Include="src\world\Map.h" />
     <ClInclude Include="src\world\MapGenerators.h" />
   </ItemGroup>

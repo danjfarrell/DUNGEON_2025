@@ -8,13 +8,25 @@
 #include "world/Map.h"
 #include "world/MapGenerators.h"
 #include "systems/MapRenderSystem.h"
+#include "utils/Logger.h"
+
+
+
 
 int main(int argc, char* argv[]) {
+    
+    Logger::get_instance("game_log.txt", LogLevel::DEBUG);
+
+    LOG_INFO("=== Starting Roguelike ===");
+    
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cout << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        //std::cout << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        LOG_ERROR("SDL_Init failed: " + std::string(SDL_GetError()));
+        
         return 1;
     }
+    LOG_INFO("SDL initialized successfully");
 
     // Create window
     SDL_Window* window = SDL_CreateWindow(
@@ -267,6 +279,6 @@ int main(int argc, char* argv[]) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-
+    
     return 0;
 }

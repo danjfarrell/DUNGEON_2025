@@ -77,6 +77,9 @@
     <ClInclude Include="src\systems\MapRenderSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">
