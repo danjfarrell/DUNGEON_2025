@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <random>
+#include <functional>
 
 // Forward declaration
 class Map;
@@ -75,6 +76,21 @@ public:
     void fill_all(TileType type);
     void add_room(const Room& room);
     std::mt19937& get_rng() { return rng; }
+
+    void dump_to_log(int max_width = 80, int max_height = 40) const;
+
+    void dump_with_sprites_to_log(
+        std::function<std::string(int, int, TileType)> get_sprite_name,
+        int max_width = 80,
+        int max_height = 40
+    ) const;
+
+    void Map::dump_sprite_grid_to_log(
+        std::function<std::string(int, int, TileType)> get_sprite_name,
+        int start_x, int start_y,
+        int width, int height
+    ) const;
+
 
 private:
     void create_room(const Room& room);

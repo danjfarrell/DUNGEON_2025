@@ -95,3 +95,28 @@ std::string MapRenderSystem::get_wall_sprite_name(int x, int y) {
     // Isolated
     return "wall.single";
 }
+
+std::string MapRenderSystem::get_sprite_name_for_tile(int x, int y, TileType tile) const {
+    switch (tile) {
+    case TileType::FLOOR:
+        return "floor.stone";
+
+    case TileType::WALL:
+        return const_cast<MapRenderSystem*>(this)->get_wall_sprite_name(x, y);
+
+    case TileType::DOOR_CLOSED:
+        return "door.closed";
+
+    case TileType::DOOR_OPEN:
+        return "door.open";
+
+    case TileType::STAIRS_DOWN:
+        return "stairs.down";
+
+    case TileType::STAIRS_UP:
+        return "stairs.up";
+
+    default:
+        return "UNKNOWN";
+    }
+}

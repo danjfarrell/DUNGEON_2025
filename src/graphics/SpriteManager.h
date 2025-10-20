@@ -29,6 +29,10 @@ public:
         }
     }
 
+    void dump_config_to_log() const {
+        sprite_config.dump_to_log();
+    }
+
     // Load sprite configuration and automatically load all sprite sheets
     bool load_config(const std::string& config_file) {
         // Load the JSON config

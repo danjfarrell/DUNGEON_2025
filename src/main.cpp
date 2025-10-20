@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <iostream>
+#include <functional>
 #include "ecs/World.h"
 #include "components/Components.h"
 #include "systems/RenderSystem.h"
@@ -36,7 +37,8 @@ int main(int argc, char* argv[]) {
     );
 
     if (!window) {
-        std::cout << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+        //std::cout << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+        LOG_ERROR("SDL_CreateWindow failed: " + std::string(SDL_GetError()));
         SDL_Quit();
         return 1;
     }
@@ -45,7 +47,8 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
 
     if (!renderer) {
-        std::cout << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
+        //std::cout << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
+        LOG_ERROR("SDL_CreateRenderer failed: " + std::string(SDL_GetError()));
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
@@ -56,24 +59,56 @@ int main(int argc, char* argv[]) {
 
     // Load configuration - this now loads BOTH the config AND all sprite sheets!
     if (!sprite_manager.load_config("assets/sprites.json")) {
-        std::cout << "Failed to load sprite configuration!" << std::endl;
-        std::cout << "Make sure sprites.json is in: output/assets/" << std::endl;
+        //std::cout << "Failed to load sprite configuration!" << std::endl;
+        //std::cout << "Make sure sprites.json is in: output/assets/" << std::endl;
+        LOG_ERROR("Failed to load sprite configuration!" + std::string(SDL_GetError()));
+        LOG_ERROR("Make sure sprites.json is in: output/assets/" + std::string(SDL_GetError()));
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
 
+    sprite_manager.dump_config_to_log();
+
     // Create map and generate
     Map game_map(50, 30, 12345);
     RoomCorridorGenerator gen(8, 4, 10);
     game_map.generate(gen);
 
+    game_map.dump_to_log();
+
+   
+
+
     // Create world and add systems
     World world;
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
-    world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);  // Map first
+    //world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);  // Map first
+    auto* map_render_system = world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);
+
+
+
     world.add_system<RenderSystem>(&sprite_manager, 2);                // Entities on top
+
+    // DEBUG: Detailed tile-by-tile with sprite names
+    LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
+    game_map.dump_with_sprites_to_log(
+        [map_render_system](int x, int y, TileType tile) {
+            return map_render_system->get_sprite_name_for_tile(x, y, tile);
+        },
+        50,  // width
+        30   // height
+    );
+
+    game_map.dump_sprite_grid_to_log(
+        [map_render_system](int x, int y, TileType tile) {
+            return map_render_system->get_sprite_name_for_tile(x, y, tile);
+        },
+        0, 0,   // start position
+        50, 30  // size
+    );
+
 
     // Spawn player in first room
     Entity player = world.create_entity();
@@ -184,9 +219,12 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-    std::cout << "\nControls:" << std::endl;
-    std::cout << "  Arrow Keys - Move player & change facing direction" << std::endl;
-    std::cout << "  ESC - Quit" << std::endl;
+    //std::cout << "\nControls:" << std::endl;
+    //std::cout << "\tArrow Keys - Move player & change facing direction" << std::endl;
+    //std::cout << "\tESC - Quit" << std::endl;
+    LOG_INFO("\nControls:" + std::string(SDL_GetError()));
+    LOG_INFO("\tArrow Keys - Move player & change facing direction" + std::string(SDL_GetError()));
+    LOG_INFO("\tESC - Quit" + std::string(SDL_GetError()));
 
     while (running) {
         // Handle events

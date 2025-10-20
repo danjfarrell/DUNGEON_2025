@@ -6,6 +6,8 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
+#include "../utils/Logger.h"
+
 
 using json = nlohmann::json;
 
@@ -124,4 +126,29 @@ public:
         }
         return names;
     }
+
+    void dump_to_log() const {
+        LOG_INFO("=== SPRITE CONFIG DUMP ===");
+        LOG_INFO("Number of sprite sheets: " + std::to_string(sprite_sheets.size()));
+
+        for (const auto& sheet : sprite_sheets) {
+            LOG_INFO("Sheet " + std::to_string(sheet.id) + ": " +
+                sheet.name + " (" + sheet.filepath + ")");
+        }
+
+        LOG_INFO("Number of sprite definitions: " + std::to_string(sprite_definitions.size()));
+
+        for (const auto& pair : sprite_definitions) {
+            const std::string& name = pair.first;
+            const SpriteDefinition& def = pair.second;
+
+            LOG_DEBUG("  '" + name + "' -> sheet:" + std::to_string(def.sheet_id) +
+                " tile:(" + std::to_string(def.tile_x) + "," + std::to_string(def.tile_y) + ")" +
+                " layer:" + std::to_string(def.layer));
+        }
+
+        LOG_INFO("=== END SPRITE CONFIG DUMP ===");
+    }
+
+
 };

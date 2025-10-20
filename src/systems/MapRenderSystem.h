@@ -16,6 +16,9 @@ public:
 
     void update(ComponentManager& components, float dt) override;
 
+    // NEW: Public access to sprite selection logic for debugging
+    std::string get_sprite_name_for_tile(int x, int y, TileType tile) const;
+
 private:
     std::string get_wall_sprite_name(int x, int y);
     bool is_wall(int x, int y);
