@@ -9,7 +9,8 @@ Map::Map(int w, int h, unsigned int seed)
 
     tiles.resize(height);
     for (int y = 0; y < height; y++) {
-        tiles[y].resize(width, TileType::WALL);
+        //tiles[y].resize(width, TileType::WALL);
+		tiles[y].resize(width, TileType::VOID);  // Initialize with VOID
     }
 
     std::cout << "Created map: " << width << "x" << height << std::endl;
@@ -17,6 +18,7 @@ Map::Map(int w, int h, unsigned int seed)
 
 void Map::generate(MapGenerator& generator) {
     std::cout << "Generating map with: " << generator.get_name() << std::endl;
+	LOG_INFO("Map:Generating map with: " + generator.get_name());
     generator.generate(*this, rng);
 }
 
@@ -34,7 +36,8 @@ void Map::add_room(const Room& room) {
 
 TileType Map::get_tile(int x, int y) const {
     if (x < 0 || x >= width || y < 0 || y >= height) {
-        return TileType::WALL;
+        //return TileType::WALL;
+		return TileType::VOID;  // Out-of-bounds returns VOID
     }
     return tiles[y][x];
 }
@@ -126,6 +129,7 @@ void Map::dump_to_log(int max_width, int max_height) const {
             char symbol;
 
             switch (tile) {
+            case TileType::VOID:         symbol = ' '; break;  // Space for void
             case TileType::WALL:         symbol = '#'; break;
             case TileType::FLOOR:        symbol = '.'; break;
             case TileType::DOOR_CLOSED:  symbol = '+'; break;

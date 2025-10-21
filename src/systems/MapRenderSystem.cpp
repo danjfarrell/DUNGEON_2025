@@ -13,7 +13,7 @@ void MapRenderSystem::update(ComponentManager& components, float dt) {
         }
     }
 }
-
+/*
 void MapRenderSystem::render_map_tile(int x, int y) {
     TileType tile = game_map->get_tile(x, y);
     std::string sprite_name;
@@ -53,8 +53,60 @@ void MapRenderSystem::render_map_tile(int x, int y) {
 
     sprite_manager->render_sprite(sprite_name, screen_x, screen_y, tile_scale);
 }
+*/
+
+void MapRenderSystem::render_map_tile(int x, int y) {
+    TileType tile = game_map->get_tile(x, y);
+    std::string sprite_name;
+
+    switch (tile) {
+    case TileType::VOID:
+        // Don't render void tiles (or use a black/empty sprite)
+        return;
+
+    case TileType::FLOOR:
+        sprite_name = "floor.stone";
+        break;
+
+    case TileType::WALL:
+        sprite_name = get_wall_sprite_name(x, y);
+        break;
+
+    case TileType::DOOR_CLOSED:
+        sprite_name = "door.closed";
+        break;
+
+    case TileType::DOOR_OPEN:
+        sprite_name = "door.open";
+        break;
+
+    case TileType::STAIRS_DOWN:
+        sprite_name = "stairs.down";
+        break;
+
+    case TileType::STAIRS_UP:
+        sprite_name = "stairs.up";
+        break;
+
+    default:
+        return;
+    }
+
+    int tile_size = sprite_manager->get_tile_width() * tile_scale;
+    int screen_x = x * tile_size;
+    int screen_y = y * tile_size;
+
+    sprite_manager->render_sprite(sprite_name, screen_x, screen_y, tile_scale);
+}
 
 bool MapRenderSystem::is_wall(int x, int y) {
+    //TileType tile = game_map->get_tile(x, y);
+    //return tile == TileType::WALL;
+    if (x < 0 || x >= game_map->get_width() ||
+        y < 0 || y >= game_map->get_height()) {
+        return false;  // Out-of-bounds = no wall connection
+    }
+
     TileType tile = game_map->get_tile(x, y);
     return tile == TileType::WALL;
 }

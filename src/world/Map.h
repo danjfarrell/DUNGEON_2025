@@ -17,6 +17,7 @@ public:
 
 // Different types of tiles
 enum class TileType {
+    VOID,          // Unused space (never carved) - NEW!
     FLOOR,
     WALL,
     DOOR_CLOSED,

@@ -136,85 +136,6 @@ int main(int argc, char* argv[]) {
     }
 
 
-    //// Create the world and add systems
-    //World world;
-    //world.add_system<SpriteUpdateSystem>(&sprite_manager);
-    //world.add_system<RenderSystem>(&sprite_manager, 2);
-
-    //// Create player with directional sprites
-    //Entity player = world.create_entity();
-    //world.add_component(player, Position{ 10, 10 });
-    //world.add_component(player, SpriteBase{ "player", "south" });
-    //world.add_component(player, Facing{ Facing::SOUTH });
-    //world.add_component(player, sprite_manager.create_renderable("player.south"));
-    //world.add_component(player, PlayerControlled{});
-    //world.add_component(player, BlocksMovement{});
-    //world.add_component(player, Health{ 100, 100 });
-    //world.add_component(player, Name{ "Hero" });
-
-    //// Create some goblins
-    //Entity goblin1 = world.create_entity();
-    //world.add_component(goblin1, Position{ 15, 12 });
-    //world.add_component(goblin1, SpriteBase{ "goblin", "idle" });
-    //world.add_component(goblin1, sprite_manager.create_renderable("goblin.idle"));
-    //world.add_component(goblin1, BlocksMovement{});
-    //world.add_component(goblin1, Health{ 30, 30 });
-    //world.add_component(goblin1, Name{ "Goblin" });
-
-    //Entity goblin2 = world.create_entity();
-    //world.add_component(goblin2, Position{ 8, 8 });
-    //world.add_component(goblin2, SpriteBase{ "goblin", "idle" });
-    //world.add_component(goblin2, sprite_manager.create_renderable("goblin.idle"));
-    //world.add_component(goblin2, BlocksMovement{});
-    //world.add_component(goblin2, Health{ 30, 30 });
-    //world.add_component(goblin2, Name{ "Goblin" });
-
-    //// Create floor tiles
-    //for (int y = 5; y < 15; y++) {
-    //    for (int x = 5; x < 20; x++) {
-    //        Entity floor = world.create_entity();
-    //        world.add_component(floor, Position{ x, y });
-    //        world.add_component(floor, sprite_manager.create_renderable("floor.stone"));
-    //    }
-    //}
-
-    //// Create walls (stone walls)
-    //for (int x = 5; x < 20; x++) {
-    //    Entity wall_top = world.create_entity();
-    //    world.add_component(wall_top, Position{ x, 5 });
-    //    world.add_component(wall_top, sprite_manager.create_renderable("wall.stone"));
-    //    world.add_component(wall_top, BlocksMovement{});
-
-    //    Entity wall_bottom = world.create_entity();
-    //    world.add_component(wall_bottom, Position{ x, 14 });
-    //    world.add_component(wall_bottom, sprite_manager.create_renderable("wall.stone"));
-    //    world.add_component(wall_bottom, BlocksMovement{});
-    //}
-
-    //for (int y = 6; y < 14; y++) {
-    //    Entity wall_left = world.create_entity();
-    //    world.add_component(wall_left, Position{ 5, y });
-    //    world.add_component(wall_left, sprite_manager.create_renderable("wall.stone"));
-    //    world.add_component(wall_left, BlocksMovement{});
-
-    //    Entity wall_right = world.create_entity();
-    //    world.add_component(wall_right, Position{ 19, y });
-    //    world.add_component(wall_right, sprite_manager.create_renderable("wall.stone"));
-    //    world.add_component(wall_right, BlocksMovement{});
-    //}
-
-    //// Create a potion
-    //Entity potion = world.create_entity();
-    //world.add_component(potion, Position{ 12, 10 });
-    //world.add_component(potion, sprite_manager.create_renderable("potion.small"));
-    //world.add_component(potion, Name{ "Health Potion" });
-
-    //// Create a sword
-    //Entity sword = world.create_entity();
-    //world.add_component(sword, Position{ 14, 11 });
-    //world.add_component(sword, sprite_manager.create_renderable("sword"));
-    //world.add_component(sword, Name{ "Iron Sword" });
-
     // Game loop
     bool running = true;
     SDL_Event event;
@@ -247,10 +168,7 @@ int main(int argc, char* argv[]) {
                 if (pos && facing) {
                     int new_x = pos->x;
                     int new_y = pos->y;
-                    // Before moving, check map
-                    if (!game_map.is_walkable(new_x, new_y)) {
-                        continue;  // Can't walk through walls
-                    }
+                    
 
                     // Then check entity collision as before
                     // Update direction and calculate new position
@@ -271,6 +189,12 @@ int main(int argc, char* argv[]) {
                         facing->dir = Facing::EAST;
                         new_x += 1;
                         break;
+                    }
+
+                    // Before moving, check map
+                    if (!game_map.is_walkable(new_x, new_y)) {
+
+                        continue;  // Can't walk through walls
                     }
 
                     // Simple collision detection
