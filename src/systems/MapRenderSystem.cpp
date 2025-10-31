@@ -1,17 +1,44 @@
 #include "MapRenderSystem.h"
 
-MapRenderSystem::MapRenderSystem(SpriteManager* sm, Map* map, int scale)
-    : sprite_manager(sm), game_map(map), tile_scale(scale) {
-}
+//MapRenderSystem::MapRenderSystem(SpriteManager* sm, Map* map, int scale, Camera* cam)
+//    : sprite_manager(sm), game_map(map), tile_scale(scale), camera(cam) {
+//}
 
 void MapRenderSystem::update(ComponentManager& components, float dt) {
     if (!game_map) return;
 
-    for (int y = 0; y < game_map->get_height(); y++) {
-        for (int x = 0; x < game_map->get_width(); x++) {
+    // If no camera, render everything (fallback)
+    if (!camera) {
+        for (int y = 0; y < game_map->get_height(); y++) {
+            for (int x = 0; x < game_map->get_width(); x++) {
+                render_map_tile(x, y);
+            }
+        }
+        return;
+    }
+
+    // With camera: only render visible tiles
+    int tile_size = sprite_manager->get_tile_width() * tile_scale;
+
+    // Calculate visible tile range
+    int start_x = camera->get_x() / tile_size;
+    int start_y = camera->get_y() / tile_size;
+    int end_x = (camera->get_x() + 800) / tile_size + 1;  // Screen width
+    int end_y = (camera->get_y() + 600) / tile_size + 1;  // Screen height
+
+    // Clamp to map bounds
+    start_x = std::max(0, start_x);
+    start_y = std::max(0, start_y);
+    end_x = std::min(game_map->get_width(), end_x);
+    end_y = std::min(game_map->get_height(), end_y);
+
+    // Render only visible tiles
+    for (int y = start_y; y < end_y; y++) {
+        for (int x = start_x; x < end_x; x++) {
             render_map_tile(x, y);
         }
     }
+
 }
 /*
 void MapRenderSystem::render_map_tile(int x, int y) {

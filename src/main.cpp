@@ -5,6 +5,7 @@
 #include "components/Components.h"
 #include "systems/RenderSystem.h"
 #include "systems/SpriteUpdateSystem.h"
+#include "systems/Camera.h"
 #include "graphics/SpriteManager.h"
 #include "world/Map.h"
 #include "world/MapGenerators.h"
@@ -28,6 +29,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     LOG_INFO("SDL initialized successfully");
+
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
 
     // Create window
     SDL_Window* window = SDL_CreateWindow(
@@ -59,8 +63,6 @@ int main(int argc, char* argv[]) {
 
     // Load configuration - this now loads BOTH the config AND all sprite sheets!
     if (!sprite_manager.load_config("assets/sprites.json")) {
-        //std::cout << "Failed to load sprite configuration!" << std::endl;
-        //std::cout << "Make sure sprites.json is in: output/assets/" << std::endl;
         LOG_ERROR("Failed to load sprite configuration!" + std::string(SDL_GetError()));
         LOG_ERROR("Make sure sprites.json is in: output/assets/" + std::string(SDL_GetError()));
         SDL_DestroyRenderer(renderer);
@@ -78,18 +80,26 @@ int main(int argc, char* argv[]) {
 
     game_map.dump_to_log();
 
-   
+    // NEW: Create camera
+    const int TILE_SIZE = 16 * 2;  // tile_width * scale
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT,
+        game_map.get_width(), game_map.get_height(),
+        TILE_SIZE);
 
 
     // Create world and add systems
     World world;
-    world.add_system<SpriteUpdateSystem>(&sprite_manager);
+    //world.add_system<SpriteUpdateSystem>(&sprite_manager);
     //world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);  // Map first
-    auto* map_render_system = world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);
+    //auto* map_render_system = world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);
 
+    //world.add_system<RenderSystem>(&sprite_manager, 2);                // Entities on top
+    world.add_system<SpriteUpdateSystem>(&sprite_manager);
+    auto* map_render_system = world.add_system<MapRenderSystem>(
+        &sprite_manager, &game_map, 2, &camera);  // Pass camera
+    auto* render_system = world.add_system<RenderSystem>(
+        &sprite_manager, 2, &camera);  // Pass camera
 
-
-    world.add_system<RenderSystem>(&sprite_manager, 2);                // Entities on top
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
@@ -116,9 +126,12 @@ int main(int argc, char* argv[]) {
     if (!game_map.get_rooms().empty()) {
         first_room = &game_map.get_rooms()[0];
         world.add_component(player, Position{ first_room->center_x(), first_room->center_y() });
+        // NEW: Center camera on player at start
+        camera.center_on(first_room->center_x(), first_room->center_y());
     }
     else {
         world.add_component(player, Position{ 5, 5 });
+        camera.center_on(5, 5);
     }
     world.add_component(player, SpriteBase{ "player", "south" });
     world.add_component(player, Facing{ Facing::SOUTH });
@@ -219,6 +232,10 @@ int main(int argc, char* argv[]) {
                     if (can_move) {
                         pos->x = new_x;
                         pos->y = new_y;
+                        // NEW: Update camera to follow player
+                        camera.center_on(new_x, new_y);
+                        // OR for smooth following:
+                        // camera.smooth_follow(new_x, new_y, 0.15f);
                     }
                 }
             }
