@@ -120,8 +120,20 @@ void MapRenderSystem::render_map_tile(int x, int y) {
     }
 
     int tile_size = sprite_manager->get_tile_width() * tile_scale;
-    int screen_x = x * tile_size;
-    int screen_y = y * tile_size;
+    //int screen_x = x * tile_size;
+    //int screen_y = y * tile_size;
+    int world_x = x * tile_size;
+    int world_y = y * tile_size;
+
+    // IMPORTANT: Apply camera offset to map too
+    int screen_x = world_x;
+    int screen_y = world_y;
+
+    if (camera) {
+        screen_x = camera->world_to_screen_x(world_x);
+        screen_y = camera->world_to_screen_y(world_y);
+    }
+
 
     sprite_manager->render_sprite(sprite_name, screen_x, screen_y, tile_scale);
 }

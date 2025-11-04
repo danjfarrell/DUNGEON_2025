@@ -130,8 +130,8 @@ int main(int argc, char* argv[]) {
         camera.center_on(first_room->center_x(), first_room->center_y());
     }
     else {
-        world.add_component(player, Position{ 5, 5 });
-        camera.center_on(5, 5);
+        world.add_component(player, Position{ 6, 6 });
+        camera.center_on(6, 6);
     }
     world.add_component(player, SpriteBase{ "player", "south" });
     world.add_component(player, Facing{ Facing::SOUTH });
