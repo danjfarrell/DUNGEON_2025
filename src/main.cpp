@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <iostream>
 #include <functional>
 #include "ecs/World.h"
@@ -11,6 +12,8 @@
 #include "world/MapGenerators.h"
 #include "systems/MapRenderSystem.h"
 #include "utils/Logger.h"
+#include "ui/MessageLog.h" 
+
 
 
 
@@ -29,6 +32,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     LOG_INFO("SDL initialized successfully");
+    
+    if (!TTF_Init()) {  // NEW
+        LOG_ERROR("TTF_Init failed: " + std::string(SDL_GetError()));
+        SDL_Quit();
+        return 1;
+    }
+    LOG_INFO("TTF initialized successfully");
 
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
@@ -86,6 +96,32 @@ int main(int argc, char* argv[]) {
         game_map.get_width(), game_map.get_height(),
         TILE_SIZE);
 
+    // NEW: Create message log (bottom of screen)
+    const int LOG_HEIGHT = 150;
+    MessageLog message_log(renderer, 10, SCREEN_HEIGHT - LOG_HEIGHT - 10,
+        SCREEN_WIDTH - 20, LOG_HEIGHT);
+
+    // Try to load a font - provide fallback paths
+    bool font_loaded = false;
+    std::vector<std::string> font_paths = {
+        "assets/fonts/DejaVuSansMono.ttf",
+        "C:/Windows/Fonts/consola.ttf",  // Windows
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",  // Linux
+        "/System/Library/Fonts/Monaco.dfont"  // macOS
+    };
+
+    for (const auto& path : font_paths) {
+        if (message_log.init_font(path, 14)) {
+            LOG_INFO("Loaded font: " + path);
+            font_loaded = true;
+            break;
+        }
+    }
+
+    if (!font_loaded) {
+        LOG_WARN("Could not load any font - message log will not render");
+        // Continue anyway - game still playable
+    }
 
     // Create world and add systems
     World world;
@@ -139,15 +175,24 @@ int main(int argc, char* argv[]) {
     world.add_component(player, PlayerControlled{});
     world.add_component(player, BlocksMovement{});
 
+    // NEW: Welcome message
+    message_log.add_success("Welcome to the dungeon!");
+    message_log.add_info("Use arrow keys to move. Press ESC to quit.");
+
+
     // Spawn goblins in rooms
     const auto& rooms = game_map.get_rooms();
+    int goblin_count = 0;
     for (size_t i = 1; i < rooms.size() && i < 4; i++) {
         Entity goblin = world.create_entity();
         world.add_component(goblin, Position{ rooms[i].center_x(), rooms[i].center_y() });
         world.add_component(goblin, sprite_manager.create_renderable("goblin.idle"));
         world.add_component(goblin, BlocksMovement{});
+        goblin_count++;
     }
 
+    message_log.add_warning("You sense " + std::to_string(goblin_count) +
+        " goblins lurking in the darkness...");
 
     // Game loop
     bool running = true;
@@ -206,7 +251,13 @@ int main(int argc, char* argv[]) {
 
                     // Before moving, check map
                     if (!game_map.is_walkable(new_x, new_y)) {
-
+                        TileType tile = game_map.get_tile(new_x, new_y);
+                        if (tile == TileType::WALL) {
+                            message_log.add_info("You bump into a wall.");
+                        }
+                        else if (tile == TileType::DOOR_CLOSED) {
+                            message_log.add_warning("The door is locked.");
+                        }
                         continue;  // Can't walk through walls
                     }
 
@@ -222,6 +273,8 @@ int main(int argc, char* argv[]) {
 
                             Position* blocker_pos = positions->get(blocker);
                             if (blocker_pos && blocker_pos->x == new_x && blocker_pos->y == new_y) {
+                                // NEW: Message when bumping into entity
+                                message_log.add_combat("You bump into a goblin! (Combat not yet implemented)");
                                 can_move = false;
                                 break;
                             }
@@ -234,6 +287,20 @@ int main(int argc, char* argv[]) {
                         pos->y = new_y;
                         // NEW: Update camera to follow player
                         camera.center_on(new_x, new_y);
+
+                        // NEW: Advance turn and occasionally add flavor text
+                        message_log.next_turn();
+
+                        // Random flavor messages (10% chance)
+                        if (rand() % 10 == 0) {
+                            const char* flavor[] = {
+                                "Your footsteps echo in the dungeon.",
+                                "You hear water dripping somewhere.",
+                                "A cold breeze brushes past you.",
+                                "The torch flickers."
+                            };
+                            message_log.add_lore(flavor[rand() % 4]);
+                        }
                         // OR for smooth following:
                         // camera.smooth_follow(new_x, new_y, 0.15f);
                     }
@@ -247,6 +314,8 @@ int main(int argc, char* argv[]) {
 
         // Update all systems (sprite update, then render)
         world.update(0.016f);
+
+        message_log.render();
 
         // Present the frame
         SDL_RenderPresent(renderer);
