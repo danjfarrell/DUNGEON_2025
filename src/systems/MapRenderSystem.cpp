@@ -134,6 +134,11 @@ void MapRenderSystem::render_map_tile(int x, int y) {
         screen_y = camera->world_to_screen_y(world_y);
     }
 
+    //  NEW: Add viewport offset
+    if (ui_layout) {
+        screen_x += ui_layout->game_viewport.x;
+        screen_y += ui_layout->game_viewport.y;
+    }
 
     sprite_manager->render_sprite(sprite_name, screen_x, screen_y, tile_scale);
 }

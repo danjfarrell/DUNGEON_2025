@@ -1,4 +1,4 @@
-#include <SDL3/SDL.h>
+﻿#include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <iostream>
 #include <functional>
@@ -13,7 +13,7 @@
 #include "systems/MapRenderSystem.h"
 #include "utils/Logger.h"
 #include "ui/MessageLog.h" 
-
+#include "ui/UILayout.h"  // NEW
 
 
 
@@ -40,8 +40,20 @@ int main(int argc, char* argv[]) {
     }
     LOG_INFO("TTF initialized successfully");
 
-    const int SCREEN_WIDTH = 800;
-    const int SCREEN_HEIGHT = 600;
+    //const int SCREEN_WIDTH = 800;
+    //const int SCREEN_HEIGHT = 600;
+    //  INCREASED RESOLUTION OPTIONS:
+    // Option 1: 1280x720 (HD)
+    const int SCREEN_WIDTH = 1280;
+    const int SCREEN_HEIGHT = 720;
+    // Option 2: 1920x1080 (Full HD) - Uncomment to use
+    // const int SCREEN_WIDTH = 1920;
+    // const int SCREEN_HEIGHT = 1080;
+
+    // Option 3: 1600x900 (Good middle ground) - Uncomment to use
+    // const int SCREEN_WIDTH = 1600;
+    // const int SCREEN_HEIGHT = 900;
+
 
     // Create window
     SDL_Window* window = SDL_CreateWindow(
@@ -68,6 +80,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    //  Create UI Layout with new resolution
+    UILayout ui_layout(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    LOG_INFO("UI Layout calculated for " + std::to_string(SCREEN_WIDTH) + "x" +
+        std::to_string(SCREEN_HEIGHT) + ":");
+    LOG_INFO("  Game viewport: " + std::to_string(ui_layout.game_viewport.w) + "x" +
+        std::to_string(ui_layout.game_viewport.h));
+    LOG_INFO("  Minimap: " + std::to_string(ui_layout.minimap.w) + "x" +
+        std::to_string(ui_layout.minimap.h));
+    LOG_INFO("  Top bar: " + std::to_string(ui_layout.top_bar.h) + "px");
+    LOG_INFO("  Message log: " + std::to_string(ui_layout.message_log.h) + "px");
+
+
     // Create sprite manager
     SpriteManager sprite_manager(renderer, 16, 16);
 
@@ -92,14 +117,29 @@ int main(int argc, char* argv[]) {
 
     // NEW: Create camera
     const int TILE_SIZE = 16 * 2;  // tile_width * scale
-    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT,
-        game_map.get_width(), game_map.get_height(),
-        TILE_SIZE);
+    //Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT,
+    //    game_map.get_width(), game_map.get_height(),
+    //    TILE_SIZE);
+    Camera camera(
+        ui_layout.game_viewport.w,
+        ui_layout.game_viewport.h,
+        game_map.get_width(),
+        game_map.get_height(),
+        TILE_SIZE
+    );
+    // Create message log using layout dimensions
+    MessageLog message_log(
+        renderer,
+        ui_layout.message_log.x,
+        ui_layout.message_log.y,
+        ui_layout.message_log.w,
+        ui_layout.message_log.h
+    );
 
     // NEW: Create message log (bottom of screen)
-    const int LOG_HEIGHT = 150;
-    MessageLog message_log(renderer, 10, SCREEN_HEIGHT - LOG_HEIGHT - 10,
-        SCREEN_WIDTH - 20, LOG_HEIGHT);
+    //const int LOG_HEIGHT = 150;
+   // MessageLog message_log(renderer, 10, SCREEN_HEIGHT - LOG_HEIGHT - 10,
+   //     SCREEN_WIDTH - 20, LOG_HEIGHT);
 
     // Try to load a font - provide fallback paths
     bool font_loaded = false;
@@ -132,9 +172,9 @@ int main(int argc, char* argv[]) {
     //world.add_system<RenderSystem>(&sprite_manager, 2);                // Entities on top
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
     auto* map_render_system = world.add_system<MapRenderSystem>(
-        &sprite_manager, &game_map, 2, &camera);  // Pass camera
+        &sprite_manager, &game_map, 2, &camera, &ui_layout);  // Pass camera
     auto* render_system = world.add_system<RenderSystem>(
-        &sprite_manager, 2, &camera);  // Pass camera
+        &sprite_manager, 2, &camera, &ui_layout);  // Pass camera
 
 
     // DEBUG: Detailed tile-by-tile with sprite names
@@ -314,6 +354,44 @@ int main(int argc, char* argv[]) {
 
         // Update all systems (sprite update, then render)
         world.update(0.016f);
+
+        // Reset viewport to full screen for UI
+        SDL_SetRenderViewport(renderer, nullptr);
+
+        //  Draw UI panel backgrounds
+
+        // Top bar background
+        SDL_SetRenderDrawColor(renderer, 30, 30, 40, 255);
+        SDL_FRect top_bar_rect = {
+            static_cast<float>(ui_layout.top_bar.x),
+            static_cast<float>(ui_layout.top_bar.y),
+            static_cast<float>(ui_layout.top_bar.w),
+            static_cast<float>(ui_layout.top_bar.h)
+        };
+        SDL_RenderFillRect(renderer, &top_bar_rect);
+
+        // Top bar border
+        SDL_SetRenderDrawColor(renderer, 100, 100, 120, 255);
+        SDL_RenderRect(renderer, &top_bar_rect);
+
+        //  Minimap background (placeholder - will use actual minimap later)
+        SDL_SetRenderDrawColor(renderer, 15, 15, 20, 255);
+        SDL_FRect minimap_rect = {
+            static_cast<float>(ui_layout.minimap.x),
+            static_cast<float>(ui_layout.minimap.y),
+            static_cast<float>(ui_layout.minimap.w),
+            static_cast<float>(ui_layout.minimap.h)
+        };
+        SDL_RenderFillRect(renderer, &minimap_rect);
+
+        // Minimap border
+        SDL_SetRenderDrawColor(renderer, 80, 80, 100, 255);
+        SDL_RenderRect(renderer, &minimap_rect);
+
+        // Minimap label (temporary text - replace with actual minimap)
+        // TODO: Add actual Minimap rendering here
+
+
 
         message_log.render();
 

@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "../components/Components.h"
 #include "../graphics/SpriteManager.h"
+#include "../ui/UILayout.h"
 #include <vector>
 #include <algorithm>
 
@@ -12,10 +13,11 @@ private:
     SpriteManager* sprite_manager;
     int tile_scale;  // How much to scale tiles (2 = 32x32 for 16x16 tiles)
     Camera* camera;  // NEW
+    UILayout* ui_layout;  //  ADD THIS
 
 public:
-    RenderSystem(SpriteManager* sm, int scale = 2, Camera* cam = nullptr)
-        : sprite_manager(sm), tile_scale(scale), camera(cam) {
+    RenderSystem(SpriteManager* sm, int scale = 2, Camera* cam = nullptr, UILayout* layout = nullptr)
+        : sprite_manager(sm), tile_scale(scale), camera(cam), ui_layout(layout) {
     }
         
 

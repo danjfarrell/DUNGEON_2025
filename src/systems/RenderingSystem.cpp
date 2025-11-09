@@ -1,4 +1,4 @@
-#include "RenderSystem.h"
+﻿#include "RenderSystem.h"
 
 /*RenderSystem::RenderSystem(SpriteManager* sm, int scale = 2, Camera* cam = nullptr)
     : sprite_manager(sm), tile_scale(scale), camera(cam) {
@@ -63,6 +63,12 @@ void RenderSystem::update(ComponentManager& components, float dt) {
         if (camera) {
             screen_x = camera->world_to_screen_x(world_x);
             screen_y = camera->world_to_screen_y(world_y);
+        }
+
+        //  NEW: Add viewport offset (shifts everything down from top bar)
+        if (ui_layout) {
+            screen_x += ui_layout->game_viewport.x;
+            screen_y += ui_layout->game_viewport.y;
         }
 
         sprite_manager->render_tile(
