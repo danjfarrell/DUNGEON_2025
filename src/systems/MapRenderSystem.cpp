@@ -20,11 +20,15 @@ void MapRenderSystem::update(ComponentManager& components, float dt) {
     // With camera: only render visible tiles
     int tile_size = sprite_manager->get_tile_width() * tile_scale;
 
+    // Calculate visible tile range based on camera and viewport
+    int viewport_width = ui_layout ? ui_layout->game_viewport.w : 800;
+    int viewport_height = ui_layout ? ui_layout->game_viewport.h : 600;
+
     // Calculate visible tile range
     int start_x = camera->get_x() / tile_size;
     int start_y = camera->get_y() / tile_size;
-    int end_x = (camera->get_x() + 800) / tile_size + 1;  // Screen width
-    int end_y = (camera->get_y() + 600) / tile_size + 1;  // Screen height
+    int end_x = (camera->get_x() + 800) / tile_size + 2;  // Screen width
+    int end_y = (camera->get_y() + 600) / tile_size + 2;  // Screen height
 
     // Clamp to map bounds
     start_x = std::max(0, start_x);

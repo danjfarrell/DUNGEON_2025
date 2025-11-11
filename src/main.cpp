@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     // Create window
     SDL_Window* window = SDL_CreateWindow(
         "Roguelike - Tileset Version",
-        800, 600,
+        SCREEN_WIDTH, SCREEN_HEIGHT,
         0
     );
 
@@ -349,14 +349,14 @@ int main(int argc, char* argv[]) {
         }
 
         // Clear screen to black
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 20, 20, 30, 255);
         SDL_RenderClear(renderer);
 
         // Update all systems (sprite update, then render)
-        world.update(0.016f);
+        //world.update(0.016f);
 
         // Reset viewport to full screen for UI
-        SDL_SetRenderViewport(renderer, nullptr);
+        //SDL_SetRenderViewport(renderer, nullptr);
 
         //  Draw UI panel backgrounds
 
@@ -391,7 +391,8 @@ int main(int argc, char* argv[]) {
         // Minimap label (temporary text - replace with actual minimap)
         // TODO: Add actual Minimap rendering here
 
-
+        // Render game world (systems already add viewport offset)
+        world.update(0.016f);
 
         message_log.render();
 
