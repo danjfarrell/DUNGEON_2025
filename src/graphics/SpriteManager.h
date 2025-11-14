@@ -33,6 +33,9 @@ public:
         sprite_config.dump_to_log();
     }
 
+    // NEW: Accessor for renderer (needed for clipping)
+    SDL_Renderer* get_renderer() const { return renderer; }
+
     // Load sprite configuration and automatically load all sprite sheets
     bool load_config(const std::string& config_file) {
         // Load the JSON config

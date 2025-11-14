@@ -5,11 +5,30 @@
 }*/
 
 void RenderSystem::update(ComponentManager& components, float dt) {
+    
+    // NEW: Set clipping rectangle to game viewport only
+    if (ui_layout) {
+        SDL_Rect clip_rect = {
+            ui_layout->game_viewport.x,
+            ui_layout->game_viewport.y,
+            ui_layout->game_viewport.w,
+            ui_layout->game_viewport.h
+        };
+        SDL_SetRenderClipRect(sprite_manager->get_renderer(), &clip_rect);
+    }
+    
+    
+    
+    
     // Get component arrays
     ComponentArray<Position>* positions = components.get_array<Position>();
     ComponentArray<Renderable>* renderables = components.get_array<Renderable>();
 
     if (!positions || !renderables) {
+        // NEW: Clear clipping before returning
+        if (ui_layout) {
+            SDL_SetRenderClipRect(sprite_manager->get_renderer(), nullptr);
+        }
         return;
     }
 
@@ -79,5 +98,10 @@ void RenderSystem::update(ComponentManager& components, float dt) {
             screen_y,
             tile_scale
         );
+    }
+
+    // NEW: Clear clipping rectangle when done
+    if (ui_layout) {
+        SDL_SetRenderClipRect(sprite_manager->get_renderer(), nullptr);
     }
 }

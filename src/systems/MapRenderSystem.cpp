@@ -7,6 +7,18 @@
 void MapRenderSystem::update(ComponentManager& components, float dt) {
     if (!game_map) return;
 
+    // NEW: Set clipping rectangle to game viewport only
+    if (ui_layout) {
+        SDL_Rect clip_rect = {
+            ui_layout->game_viewport.x,
+            ui_layout->game_viewport.y,
+            ui_layout->game_viewport.w,
+            ui_layout->game_viewport.h
+        };
+        SDL_SetRenderClipRect(sprite_manager->get_renderer(), &clip_rect);
+    }
+
+
     // If no camera, render everything (fallback)
     if (!camera) {
         for (int y = 0; y < game_map->get_height(); y++) {
@@ -14,6 +26,11 @@ void MapRenderSystem::update(ComponentManager& components, float dt) {
                 render_map_tile(x, y);
             }
         }
+        // NEW: Clear clipping when done
+        if (ui_layout) {
+            SDL_SetRenderClipRect(sprite_manager->get_renderer(), nullptr);
+        }
+
         return;
     }
 
@@ -27,8 +44,8 @@ void MapRenderSystem::update(ComponentManager& components, float dt) {
     // Calculate visible tile range
     int start_x = camera->get_x() / tile_size;
     int start_y = camera->get_y() / tile_size;
-    int end_x = (camera->get_x() + 800) / tile_size + 2;  // Screen width
-    int end_y = (camera->get_y() + 600) / tile_size + 2;  // Screen height
+    int end_x = (camera->get_x() + viewport_width) / tile_size + 2;  // Screen width
+    int end_y = (camera->get_y() + viewport_height) / tile_size + 2;  // Screen height
 
     // Clamp to map bounds
     start_x = std::max(0, start_x);
@@ -41,6 +58,11 @@ void MapRenderSystem::update(ComponentManager& components, float dt) {
         for (int x = start_x; x < end_x; x++) {
             render_map_tile(x, y);
         }
+    }
+
+    // NEW: Clear clipping rectangle when done
+    if (ui_layout) {
+        SDL_SetRenderClipRect(sprite_manager->get_renderer(), nullptr);
     }
 
 }
