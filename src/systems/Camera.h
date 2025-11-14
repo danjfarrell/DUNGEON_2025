@@ -78,7 +78,7 @@ private:
 
         // Don't scroll past right/bottom edges
         if (x + viewport_width > map_width) {
-            x = map_width - viewport_height;
+            x = map_width - viewport_width;
             if (x < 0) x = 0;  // Handle small maps
         }
         if (y + viewport_height > map_height) {
