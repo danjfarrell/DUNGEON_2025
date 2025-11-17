@@ -395,7 +395,23 @@ int main(int argc, char* argv[]) {
         world.update(0.016f);
 
         message_log.render();
+        // NEW: DEBUG - Render colored borders around all UI sections
+        ui_layout.render_debug_borders(renderer);
 
+        // NEW: DEBUG - Optionally render labels (requires font)
+        if (font_loaded) {
+            // You'll need to expose the font from MessageLog or create a separate debug font
+            // For now, just borders without labels is helpful
+            TTF_Font* ui_font = TTF_OpenFont("assets/fonts/DejaVuSansMono.ttf", 14);
+            if (!ui_font) {
+                ui_font = TTF_OpenFont("C:/Windows/Fonts/consola.ttf", 14);
+            }
+
+            if (ui_font) {
+                ui_layout.render_placeholders(renderer, ui_font);
+                TTF_CloseFont(ui_font);
+            }
+        }
         // Present the frame
         SDL_RenderPresent(renderer);
 
