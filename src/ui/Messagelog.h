@@ -57,6 +57,8 @@ public:
         return true;
     }
 
+    TTF_Font* get_font() const { return font; }
+
     // Add a message
     void add_message(const std::string& text, SDL_Color color = { 255, 255, 255, 255 }) {
         messages.push_back(Message(text, color, current_turn));

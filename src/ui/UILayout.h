@@ -183,8 +183,8 @@ struct UILayout {
     void render_placeholders(SDL_Renderer* renderer, TTF_Font* font) const {
         if (!font) return;
 
-        render_top_bar_placeholder(renderer, font);
-        render_minimap_placeholder(renderer, font);
+        //render_top_bar_placeholder(renderer, font);
+        //render_minimap_placeholder(renderer, font);
         render_hotbar_placeholder(renderer, font);
     }
 

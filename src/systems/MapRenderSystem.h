@@ -5,6 +5,7 @@
 #include "../world/Map.h"
 #include "../systems/Camera.h"  // NEW
 #include "../ui/UILayout.h"
+#include "../world/TileVisibility.h" //new
 #include <string>
 
 class MapRenderSystem : public System {
@@ -14,10 +15,14 @@ private:
     int tile_scale;
     Camera* camera;  // NEW
     UILayout* ui_layout;  //  ADD THIS
+    TileVisibility* tile_visibility;
 
 public:
-    MapRenderSystem(SpriteManager* sm, Map* map, int scale = 2, Camera* cam = nullptr, UILayout* layout = nullptr)
-        : sprite_manager(sm), game_map(map), tile_scale(scale), camera(cam), ui_layout(layout) {
+    MapRenderSystem(SpriteManager* sm, Map* map, int scale = 2,
+        Camera* cam = nullptr, UILayout* layout = nullptr,
+        TileVisibility* visibility = nullptr)  //  ADD THIS PARAMETER
+        : sprite_manager(sm), game_map(map), tile_scale(scale),
+        camera(cam), ui_layout(layout), tile_visibility(visibility) {  //  INITIALIZE IT
     }
     //MapRenderSystem(SpriteManager* sm, Map* map, int scale = 2, Camera* cam = nullptr);
 
@@ -28,6 +33,13 @@ public:
 
     // NEW: Set camera reference
     void set_camera(Camera* cam) { camera = cam; }
+
+    // ========================================
+    // ADD THIS METHOD
+    // ========================================
+    void set_tile_visibility(TileVisibility* visibility) {
+        tile_visibility = visibility;
+    }
 
 private:
     std::string get_wall_sprite_name(int x, int y);

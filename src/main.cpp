@@ -14,9 +14,9 @@
 #include "utils/Logger.h"
 #include "ui/MessageLog.h" 
 #include "ui/UILayout.h"  // NEW
-
-
-
+#include "ui/Minimap.h"
+#include "world/TileVisibility.h"  // ADD THIS INCLUD
+#include "ui/HealthBar.h"
 
 int main(int argc, char* argv[]) {
     
@@ -115,6 +115,8 @@ int main(int argc, char* argv[]) {
 
     game_map.dump_to_log();
 
+
+
     // NEW: Create camera
     const int TILE_SIZE = 16 * 2;  // tile_width * scale
     //Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -134,6 +136,16 @@ int main(int argc, char* argv[]) {
         ui_layout.message_log.y,
         ui_layout.message_log.w,
         ui_layout.message_log.h
+    );
+
+    // Create health bar (using same font as message log)
+    HealthBar health_bar(
+        renderer,
+        message_log.get_font(),  // Need to add get_font() to MessageLog
+        20,                      // x position (top-left area)
+        20,                      // y position
+        250,                     // width
+        35                       // height
     );
 
     // NEW: Create message log (bottom of screen)
@@ -165,17 +177,38 @@ int main(int argc, char* argv[]) {
 
     // Create world and add systems
     World world;
-    //world.add_system<SpriteUpdateSystem>(&sprite_manager);
-    //world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);  // Map first
-    //auto* map_render_system = world.add_system<MapRenderSystem>(&sprite_manager, &game_map, 2);
 
-    //world.add_system<RenderSystem>(&sprite_manager, 2);                // Entities on top
+    // Initialize visibility system
+    world.initialize_tile_visibility(game_map.get_width(), game_map.get_height());
+    TileVisibility* tile_vis = world.get_tile_visibility();
+
+    // Option 1: Reveal all for testing (comment out for real fog of war)
+    tile_vis->reveal_all();
+
+    // Option 2: Start with everything unexplored (uncomment for real fog)
+    // tile_vis will start unexplored by default
+
+    // ========================================
+
+
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
     auto* map_render_system = world.add_system<MapRenderSystem>(
-        &sprite_manager, &game_map, 2, &camera, &ui_layout);  // Pass camera
+        &sprite_manager, &game_map, 2, &camera, &ui_layout, tile_vis);  // Pass camera
     auto* render_system = world.add_system<RenderSystem>(
         &sprite_manager, 2, &camera, &ui_layout);  // Pass camera
 
+    // Create minimap
+    Minimap minimap(
+        renderer,
+        &game_map,
+        &world,
+        ui_layout.minimap.x,
+        ui_layout.minimap.y,
+        ui_layout.minimap.w,
+        ui_layout.minimap.h
+    );
+    // Temporary: reveal all tiles (remove this once FOV is implemented)
+    minimap.reveal_all();
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
@@ -204,6 +237,7 @@ int main(int argc, char* argv[]) {
         world.add_component(player, Position{ first_room->center_x(), first_room->center_y() });
         // NEW: Center camera on player at start
         camera.center_on(first_room->center_x(), first_room->center_y());
+        tile_vis->update_fov(first_room->center_x(), first_room->center_y(), 10);
     }
     else {
         world.add_component(player, Position{ 6, 6 });
@@ -214,6 +248,9 @@ int main(int argc, char* argv[]) {
     world.add_component(player, sprite_manager.create_renderable("player.south"));
     world.add_component(player, PlayerControlled{});
     world.add_component(player, BlocksMovement{});
+    // Add Health component to player (if not already added):
+    world.add_component(player, Health{ 100, 100 });  // 100/100 HP
+
 
     // NEW: Welcome message
     message_log.add_success("Welcome to the dungeon!");
@@ -255,6 +292,26 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.key == SDLK_ESCAPE) {
                     running = false;
+                }
+                // Optional: Add keybind to toggle fog
+                // In input handling:
+                if (event.key.key == SDLK_F) {
+                    minimap.set_show_fog(!minimap.get_show_fog());
+                    message_log.add_info(minimap.get_show_fog() ?
+                        "Fog of war enabled" : "Fog of war disabled");
+                }
+                if (event.key.key == SDLK_D) {
+                    auto* hp = world.get_component<Health>(player);
+                    if (hp && hp->current > 0) {
+                        hp->current -= 10;
+                        health_bar.trigger_flash();  // Flash effect
+                        message_log.add_combat("You take 10 damage! (Test)");
+
+                        if (hp->current <= 0) {
+                            hp->current = 0;
+                            message_log.add_combat("You died!");
+                        }
+                    }
                 }
 
                 // Get player components
@@ -328,6 +385,9 @@ int main(int argc, char* argv[]) {
                         // NEW: Update camera to follow player
                         camera.center_on(new_x, new_y);
 
+                        // Update minimap center
+                        minimap.center_on(new_x, new_y);
+
                         // NEW: Advance turn and occasionally add flavor text
                         message_log.next_turn();
 
@@ -341,6 +401,7 @@ int main(int argc, char* argv[]) {
                             };
                             message_log.add_lore(flavor[rand() % 4]);
                         }
+                        tile_vis->update_fov(new_x, new_y, 10);  // Update vis
                         // OR for smooth following:
                         // camera.smooth_follow(new_x, new_y, 0.15f);
                     }
@@ -397,6 +458,16 @@ int main(int argc, char* argv[]) {
         message_log.render();
         // NEW: DEBUG - Render colored borders around all UI sections
         ui_layout.render_debug_borders(renderer);
+        
+        // Render health bar
+        auto* player_health = world.get_component<Health>(player);
+        if (player_health) {
+            health_bar.render(player_health->current, player_health->maximum);
+        }
+
+
+        // ADD NEW MINIMAP RENDER:
+        minimap.render();  // Draws the actual minimap with tiles!
 
         // NEW: DEBUG - Optionally render labels (requires font)
         if (font_loaded) {

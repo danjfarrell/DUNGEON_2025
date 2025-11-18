@@ -16,6 +16,8 @@ private:
     int tile_height;
     SpriteConfig sprite_config;
 
+
+
 public:
     SpriteManager(SDL_Renderer* r, int tile_w = 16, int tile_h = 16)
         : renderer(r), tile_width(tile_w), tile_height(tile_h) {

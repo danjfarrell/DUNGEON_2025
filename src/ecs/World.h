@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "Entity.h"
 #include "ComponentManager.h"
 #include <vector>
 #include <memory>
+#include "world/TileVisibility.h"   // ★ NEW INCLUDE
 
 // Forward declaration
 class System;
@@ -14,7 +15,19 @@ private:
     ComponentManager component_manager;
     std::vector<std::unique_ptr<System>> systems;
 
+    std::unique_ptr<TileVisibility> tile_visibility;  // NEW
+
+
 public:
+    // Constructor/Destructor - IMPLEMENTATION IN .cpp
+    World();
+    ~World();
+    // Initialize visibility system
+        // NEW: Tile visibility access (non-template)
+    TileVisibility* get_tile_visibility();
+    void initialize_tile_visibility(int width, int height);
+
+
     // Entity management
     Entity create_entity();
     void destroy_entity(Entity entity);

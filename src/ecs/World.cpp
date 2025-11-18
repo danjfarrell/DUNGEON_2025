@@ -1,6 +1,19 @@
 #include "World.h"
 #include "System.h"
 
+
+World::World() {
+    // Initialize tile visibility as nullptr
+    // Will be created when initialize_tile_visibility() is called
+}
+
+World::~World() {
+    // Unique_ptr automatically cleans up
+}
+
+
+
+
 Entity World::create_entity() {
     return entity_manager.create();
 }
@@ -18,4 +31,16 @@ void World::update(float dt) {
 
 ComponentManager& World::get_component_manager() {
     return component_manager;
+}
+
+// ========================================
+// NEW: Tile Visibility Methods
+// ========================================
+
+void World::initialize_tile_visibility(int width, int height) {
+    tile_visibility = std::make_unique<TileVisibility>(width, height);
+}
+
+TileVisibility* World::get_tile_visibility() {
+    return tile_visibility.get();
 }

@@ -109,6 +109,17 @@ void MapRenderSystem::render_map_tile(int x, int y) {
 */
 
 void MapRenderSystem::render_map_tile(int x, int y) {
+    // ========================================
+    // ADD VISIBILITY CHECK AT THE START
+    // ========================================
+    if (tile_visibility) {
+        // Don't render unexplored tiles
+        if (tile_visibility->is_unexplored(x, y)) {
+            return;
+        }
+    }
+    
+    
     TileType tile = game_map->get_tile(x, y);
     std::string sprite_name;
 
@@ -167,6 +178,33 @@ void MapRenderSystem::render_map_tile(int x, int y) {
     }
 
     sprite_manager->render_sprite(sprite_name, screen_x, screen_y, tile_scale);
+
+    // ========================================
+    // ADD DIMMING OVERLAY FOR EXPLORED TILES
+    // ========================================
+    if (tile_visibility && !tile_visibility->is_visible(x, y)) {
+        // This tile is EXPLORED but not currently VISIBLE
+        // Draw a semi-transparent dark overlay
+        SDL_SetRenderDrawBlendMode(
+            sprite_manager->get_renderer(),  // Need to add this getter
+            SDL_BLENDMODE_BLEND
+        );
+        SDL_SetRenderDrawColor(
+            sprite_manager->get_renderer(),
+            0, 0, 0, 128  // 50% dark overlay
+        );
+
+        SDL_FRect overlay_rect = {
+            static_cast<float>(screen_x),
+            static_cast<float>(screen_y),
+            static_cast<float>(tile_size),
+            static_cast<float>(tile_size)
+        };
+
+        SDL_RenderFillRect(sprite_manager->get_renderer(), &overlay_rect);
+    }
+
+
 }
 
 bool MapRenderSystem::is_wall(int x, int y) {
