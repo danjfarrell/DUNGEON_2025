@@ -13,6 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Header Files\components">
+      <UniqueIdentifier>{200a57b4-0dc9-49ca-b1cc-7d103ac82f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ecs">
+      <UniqueIdentifier>{0604fb12-70b1-4c79-8364-09ef41e2540c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\graphics">
+      <UniqueIdentifier>{48a066f5-74da-43b9-a4fb-1e5ea0f1ed20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ui">
+      <UniqueIdentifier>{85533e0d-abec-4455-8e98-266845029c9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{e2f87ca0-66a6-44d5-9fc8-bd61c70dab7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\world">
+      <UniqueIdentifier>{9e6d9d79-439c-4a41-8d59-af679595c081}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\systems">
+      <UniqueIdentifier>{f4f19c7b-9551-4b1f-ba85-3295699d1697}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -38,65 +59,77 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ecs\ComponentArray.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\Camera.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\ecs\ComponentManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\AISystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\ecs\Entity.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\CombatSystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\ecs\System.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ecs\World.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\components\Components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\systems\RenderSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\graphics\SpriteConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\graphics\SpriteManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\systems\SpriteUpdateSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\world\Map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\world\MapGenerators.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\DeathSystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
     <ClInclude Include="src\systems\MapRenderSystem.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\Logger.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\RenderSystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\systems\Camera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\SpriteUpdateSystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\ui\Messagelog.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\systems\TurnManager.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
-    <ClInclude Include="src\ui\UILayout.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\components\Components.h">
+      <Filter>Header Files\components</Filter>
     </ClInclude>
-    <ClInclude Include="src\ui\Minimap.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\ecs\ComponentArray.h">
+      <Filter>Header Files\ecs</Filter>
     </ClInclude>
-    <ClInclude Include="src\world\TileVisibility.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\ecs\ComponentManager.h">
+      <Filter>Header Files\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ecs\Entity.h">
+      <Filter>Header Files\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ecs\System.h">
+      <Filter>Header Files\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ecs\World.h">
+      <Filter>Header Files\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\SpriteConfig.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\SpriteManager.h">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\Healthbar.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\Messagelog.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\Minimap.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\UILayout.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\Logger.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\TileVisibility.h">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\MapGenerators.h">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\Map.h">
+      <Filter>Header Files\world</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

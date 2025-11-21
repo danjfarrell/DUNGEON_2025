@@ -104,3 +104,61 @@ struct Name {
 
     Name(const std::string& n = "") : name(n) {}
 };
+
+// Combat statistics
+struct CombatStats {
+    int attack;
+    int defense;
+    int max_hp;
+    int current_hp;
+
+    CombatStats(int atk = 5, int def = 0, int hp = 10)
+        : attack(atk), defense(def), max_hp(hp), current_hp(hp) {
+    }
+
+    bool is_alive() const {
+        return current_hp > 0;
+    }
+
+    void take_damage(int damage) {
+        current_hp -= damage;
+        if (current_hp < 0) current_hp = 0;
+    }
+
+    void heal(int amount) {
+        current_hp += amount;
+        if (current_hp > max_hp) current_hp = max_hp;
+    }
+};
+
+// Energy system for turn-based gameplay
+// When energy >= 100, entity can act
+struct Energy {
+    int current;
+    int speed;  // How much energy gained per turn tick
+
+    Energy(int spd = 100) : current(0), speed(spd) {
+    }
+
+    bool can_act() const {
+        return current >= 100;
+    }
+
+    void consume_turn() {
+        current -= 100;
+    }
+
+    void gain_energy() {
+        current += speed;
+    }
+};
+
+// Tag: This entity is dead and should be removed
+struct Dead {
+    // Tag component
+};
+
+// Marks entities that need to act this turn (for AI)
+struct WantsToAct {
+    // Tag component
+};

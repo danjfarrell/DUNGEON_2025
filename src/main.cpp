@@ -17,6 +17,11 @@
 #include "ui/Minimap.h"
 #include "world/TileVisibility.h"  // ADD THIS INCLUD
 #include "ui/HealthBar.h"
+#include "systems/TurnManager.h"
+#include "systems/CombatSystem.h"
+#include "systems/AISystem.h"
+#include "systems/DeathSystem.h"
+
 
 int main(int argc, char* argv[]) {
     
@@ -190,6 +195,15 @@ int main(int argc, char* argv[]) {
 
     // ========================================
 
+    // Create turn manager
+    TurnManager turn_manager(&message_log);
+
+    // Add combat system (doesn't run in update loop, called manually)
+    auto* combat_system = new CombatSystem(&message_log);
+
+    // Add systems to world
+    world.add_system<AISystem>(&game_map, combat_system);  // NEW!
+    world.add_system<DeathSystem>();  // NEW!
 
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
     auto* map_render_system = world.add_system<MapRenderSystem>(
@@ -250,7 +264,9 @@ int main(int argc, char* argv[]) {
     world.add_component(player, BlocksMovement{});
     // Add Health component to player (if not already added):
     world.add_component(player, Health{ 100, 100 });  // 100/100 HP
-
+    world.add_component(player, Name{ "Player" });  // NEW!
+    world.add_component(player, CombatStats{ 5, 1, 30 });  // NEW! (attack=5, defense=1, hp=30)
+    world.add_component(player, Energy{ 100 });  // NEW!
 
     // NEW: Welcome message
     message_log.add_success("Welcome to the dungeon!");
@@ -265,6 +281,10 @@ int main(int argc, char* argv[]) {
         world.add_component(goblin, Position{ rooms[i].center_x(), rooms[i].center_y() });
         world.add_component(goblin, sprite_manager.create_renderable("goblin.idle"));
         world.add_component(goblin, BlocksMovement{});
+        world.add_component(goblin, Name{ "Goblin" });  // NEW!
+        world.add_component(goblin, CombatStats{ 3, 0, 10 });  // NEW! (attack=3, defense=0, hp=10)
+        world.add_component(goblin, AI{ AI::AGGRESSIVE });  // NEW!
+        world.add_component(goblin, Energy{ 100 });  // NEW!
         goblin_count++;
     }
 
@@ -317,7 +337,7 @@ int main(int argc, char* argv[]) {
                 // Get player components
                 Position* pos = world.get_component<Position>(player);
                 Facing* facing = world.get_component<Facing>(player);
-
+                Energy* player_energy = world.get_component<Energy>(player);
 
 
                 if (pos && facing) {
@@ -360,6 +380,7 @@ int main(int argc, char* argv[]) {
 
                     // Simple collision detection
                     bool can_move = true;
+                    bool attacked = false;
                     auto* blockers = world.get_component_manager().get_array<BlocksMovement>();
                     auto* positions = world.get_component_manager().get_array<Position>();
 
@@ -371,15 +392,20 @@ int main(int argc, char* argv[]) {
                             Position* blocker_pos = positions->get(blocker);
                             if (blocker_pos && blocker_pos->x == new_x && blocker_pos->y == new_y) {
                                 // NEW: Message when bumping into entity
-                                message_log.add_combat("You bump into a goblin! (Combat not yet implemented)");
-                                can_move = false;
+                                //message_log.add_combat("You bump into a goblin! (Combat not yet implemented)");
+                                //can_move = false;
+                                attacked = true;
+                                player_energy->consume_turn();
+                                turn_manager.end_player_turn();
+
                                 break;
                             }
                         }
                     }
 
                     // Move if valid
-                    if (can_move) {
+                    //if (can_move) {
+                    if (!attacked) {
                         pos->x = new_x;
                         pos->y = new_y;
                         // NEW: Update camera to follow player
@@ -408,6 +434,14 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+
+        // Process enemy turns
+        if (turn_manager.is_enemy_turn()) {
+            turn_manager.process_turn(world);
+            world.update(0.016f);  // This runs AISystem
+            turn_manager.end_enemy_turn();
+        }
+
 
         // Clear screen to black
         SDL_SetRenderDrawColor(renderer, 20, 20, 30, 255);
@@ -453,7 +487,10 @@ int main(int argc, char* argv[]) {
         // TODO: Add actual Minimap rendering here
 
         // Render game world (systems already add viewport offset)
-        world.update(0.016f);
+        // Render game world (only during player turn to avoid flickering)
+        if (turn_manager.is_player_turn()) {
+            world.update(0.016f);
+        }
 
         message_log.render();
         // NEW: DEBUG - Render colored borders around all UI sections
@@ -490,6 +527,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Cleanup
+    delete combat_system;
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
