@@ -23,6 +23,47 @@
 #include "systems/DeathSystem.h"
 
 
+// Add this helper function to main.cpp (before main() function)
+// Renders HP text in the top bar
+
+void render_hp_display(SDL_Renderer* renderer, TTF_Font* font,
+    int current_hp, int max_hp, int x, int y) {
+    if (!font) return;
+
+    std::string hp_text = "HP: " + std::to_string(current_hp) + "/" + std::to_string(max_hp);
+
+    SDL_Color color = { 255, 255, 255, 255 };
+
+    // Change color based on HP percentage
+    float hp_percent = static_cast<float>(current_hp) / max_hp;
+    if (hp_percent < 0.25f) {
+        color = { 255, 50, 50, 255 };  // Red (critical)
+    }
+    else if (hp_percent < 0.50f) {
+        color = { 255, 200, 50, 255 };  // Yellow (warning)
+    }
+    else {
+        color = { 100, 255, 100, 255 };  // Green (healthy)
+    }
+
+    SDL_Surface* surface = TTF_RenderText_Blended(font, hp_text.c_str(), 0, color);
+    if (surface) {
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if (texture) {
+            SDL_FRect dest = {
+                static_cast<float>(x),
+                static_cast<float>(y),
+                static_cast<float>(surface->w),
+                static_cast<float>(surface->h)
+            };
+            SDL_RenderTexture(renderer, texture, nullptr, &dest);
+            SDL_DestroyTexture(texture);
+        }
+        SDL_DestroySurface(surface);
+    }
+}
+
+
 int main(int argc, char* argv[]) {
     
     Logger::get_instance("game_log.txt", LogLevel::DEBUG);
@@ -143,6 +184,8 @@ int main(int argc, char* argv[]) {
         ui_layout.message_log.h
     );
 
+   
+
     // Create health bar (using same font as message log)
     HealthBar health_bar(
         renderer,
@@ -179,6 +222,17 @@ int main(int argc, char* argv[]) {
         LOG_WARN("Could not load any font - message log will not render");
         // Continue anyway - game still playable
     }
+
+    // After creating message_log and loading its font:
+    TTF_Font* ui_font = nullptr;
+    for (const auto& path : font_paths) {
+        ui_font = TTF_OpenFont(path.c_str(), 20);  // Larger font for UI
+        if (ui_font) {
+            LOG_INFO("Loaded UI font: " + path);
+            break;
+        }
+    }
+
 
     // Create world and add systems
     World world;
@@ -334,16 +388,22 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
+                // Only allow player input during player turn
+                if (!turn_manager.is_player_turn()) {
+                    continue;
+                }
+
                 // Get player components
                 Position* pos = world.get_component<Position>(player);
                 Facing* facing = world.get_component<Facing>(player);
                 Energy* player_energy = world.get_component<Energy>(player);
 
-
-                if (pos && facing) {
+                
+                //if (pos && facing) {
+                if (pos && facing && player_energy) {
                     int new_x = pos->x;
                     int new_y = pos->y;
-                    
+                    bool tried_to_move = false;
 
                     // Then check entity collision as before
                     // Update direction and calculate new position
@@ -351,20 +411,26 @@ int main(int argc, char* argv[]) {
                     case SDLK_UP:
                         facing->dir = Facing::NORTH;
                         new_y -= 1;
+                        tried_to_move = true;
                         break;
                     case SDLK_DOWN:
                         facing->dir = Facing::SOUTH;
                         new_y += 1;
+                        tried_to_move = true;
                         break;
                     case SDLK_LEFT:
                         facing->dir = Facing::WEST;
                         new_x -= 1;
+                        tried_to_move = true;
                         break;
                     case SDLK_RIGHT:
                         facing->dir = Facing::EAST;
                         new_x += 1;
+                        tried_to_move = true;
                         break;
                     }
+
+                    if (!tried_to_move) continue;
 
                     // Before moving, check map
                     if (!game_map.is_walkable(new_x, new_y)) {
@@ -379,10 +445,35 @@ int main(int argc, char* argv[]) {
                     }
 
                     // Simple collision detection
-                    bool can_move = true;
+                    //bool can_move = true;
+                    //bool attacked = false;
+                    //auto* blockers = world.get_component_manager().get_array<BlocksMovement>();
+                    //auto* positions = world.get_component_manager().get_array<Position>();
+                    // Check for entity collision (might be an enemy to attack!)
                     bool attacked = false;
                     auto* blockers = world.get_component_manager().get_array<BlocksMovement>();
                     auto* positions = world.get_component_manager().get_array<Position>();
+
+                    if (blockers && positions) {
+                        auto& blocker_entities = blockers->get_entities();
+                        for (Entity blocker : blocker_entities) {
+                            if (blocker == player) continue;
+
+                            Position* blocker_pos = positions->get(blocker);
+                            if (blocker_pos && blocker_pos->x == new_x && blocker_pos->y == new_y) {
+                                // Try to attack this entity!
+                                if (combat_system->try_attack(world.get_component_manager(), player, blocker)) {
+                                    attacked = true;
+                                    player_energy->consume_turn();
+                                    turn_manager.end_player_turn();
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+
+
 
                     if (blockers && positions) {
                         auto& blocker_entities = blockers->get_entities();
@@ -408,6 +499,10 @@ int main(int argc, char* argv[]) {
                     if (!attacked) {
                         pos->x = new_x;
                         pos->y = new_y;
+
+                        player_energy->consume_turn();
+                        turn_manager.end_player_turn();
+
                         // NEW: Update camera to follow player
                         camera.center_on(new_x, new_y);
 
@@ -464,6 +559,24 @@ int main(int argc, char* argv[]) {
             static_cast<float>(ui_layout.top_bar.h)
         };
         SDL_RenderFillRect(renderer, &top_bar_rect);
+
+        // Display player HP
+        CombatStats* player_stats = world.get_component<CombatStats>(player);
+        if (player_stats && ui_font) {
+            render_hp_display(renderer, ui_font,
+                player_stats->current_hp,
+                player_stats->max_hp,
+                ui_layout.top_bar.x + 20,
+                ui_layout.top_bar.y + 25);
+        }
+
+        // Check for player death
+        if (player_stats && !player_stats->is_alive()) {
+            message_log.add_warning("YOU DIED!");
+            message_log.add_info("Press ESC to quit.");
+            // You could add a game over state here
+        }
+
 
         // Top bar border
         SDL_SetRenderDrawColor(renderer, 100, 100, 120, 255);
@@ -524,6 +637,13 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);  // ~60 FPS
+    }
+
+    // ============================================================================
+    // And cleanup at end:
+    // ============================================================================
+    if (ui_font) {
+        TTF_CloseFont(ui_font);
     }
 
     // Cleanup
