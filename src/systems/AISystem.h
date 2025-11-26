@@ -23,20 +23,27 @@ public:
     void update(ComponentManager& components, float dt) override {
         // Find player position
 		//std::cout << "AISystem Update Called" << std::endl;
-        Entity player = find_player(components);
-        if (player == 0) 
-        {
+        //Entity player = find_player(components);
+       // if (player == 0) 
+        //{
+        //    std::cout << "No player found" << std::endl;
+        //    return;  // No player found
+        //}
+        // Find player position
+        auto* player_tags = components.get_array<PlayerControlled>();
+        if (!player_tags || player_tags->size() == 0) {
             std::cout << "No player found" << std::endl;
             return;  // No player found
         }
-       
+
+        Entity player = player_tags->get_entities()[0];
         Position* player_pos = components.get_component<Position>(player);
         if (!player_pos) return;
-        std::cout << player_pos << std::endl;
+        //std::cout << player_pos << std::endl;
         // Process all entities that want to act
         auto* wants_to_act = components.get_array<WantsToAct>();
         if (!wants_to_act) return;
-        std::cout << wants_to_act << std::endl;
+        //std::cout << wants_to_act << std::endl;
 
         auto& acting_entities = wants_to_act->get_entities();
 
@@ -78,12 +85,12 @@ public:
     }
 
 private:
-    Entity find_player(ComponentManager& components) {
-        auto* player_tags = components.get_array<PlayerControlled>();
-        if (!player_tags || player_tags->size() == 0) return 0;
+    //Entity find_player(ComponentManager& components) {
+    //    auto* player_tags = components.get_array<PlayerControlled>();
+    //    if (!player_tags || player_tags->size() == 0) return 0;
 
-        return player_tags->get_entities()[0];
-    }
+    //    return player_tags->get_entities()[0];
+    //}
 
     float distance(Position* a, Position* b) {
         int dx = a->x - b->x;

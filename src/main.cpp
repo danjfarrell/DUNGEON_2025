@@ -21,6 +21,7 @@
 #include "systems/CombatSystem.h"
 #include "systems/AISystem.h"
 #include "systems/DeathSystem.h"
+#include "systems/ItemPickupSystem.h"  // NEW!
 
 
 // Add this helper function to main.cpp (before main() function)
@@ -253,10 +254,13 @@ int main(int argc, char* argv[]) {
     TurnManager turn_manager(&message_log);
 
     // Add combat system (doesn't run in update loop, called manually)
-    auto* combat_system = new CombatSystem(&message_log);
+    // IMPORTANT: Pass world and sprite_manager now!
+    auto* combat_system = new CombatSystem(&message_log, &world, &sprite_manager);
+    
 
     // Add systems to world
     world.add_system<AISystem>(&game_map, combat_system);  // NEW!
+    world.add_system<ItemPickupSystem>(&message_log);  // NEW! Runs every frame
     world.add_system<DeathSystem>();  // NEW!
 
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
@@ -321,6 +325,7 @@ int main(int argc, char* argv[]) {
     world.add_component(player, Name{ "Player" });  // NEW!
     world.add_component(player, CombatStats{ 5, 1, 30 });  // NEW! (attack=5, defense=1, hp=30)
     world.add_component(player, Energy{ 100 });  // NEW!
+    world.add_component(player, Inventory{});  // NEW!
 
     // NEW: Welcome message
     message_log.add_success("Welcome to the dungeon!");
@@ -569,6 +574,30 @@ int main(int argc, char* argv[]) {
                 ui_layout.top_bar.x + 20,
                 ui_layout.top_bar.y + 25);
         }
+        // NEW: Display gold count
+        Inventory* player_inventory = world.get_component<Inventory>(player);
+        if (player_inventory && ui_font) {
+            std::string gold_text = "Gold: " + std::to_string(player_inventory->gold);
+            SDL_Color gold_color = { 255, 215, 0, 255 };  // Gold color!
+
+            SDL_Surface* surface = TTF_RenderText_Blended(ui_font, gold_text.c_str(), 0, gold_color);
+            if (surface) {
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                if (texture) {
+                    SDL_FRect dest = {
+                        static_cast<float>(ui_layout.top_bar.x + 250),  // To the right of HP
+                        static_cast<float>(ui_layout.top_bar.y + 25),
+                        static_cast<float>(surface->w),
+                        static_cast<float>(surface->h)
+                    };
+                    SDL_RenderTexture(renderer, texture, nullptr, &dest);
+                    SDL_DestroyTexture(texture);
+                }
+                SDL_DestroySurface(surface);
+            }
+        }
+
+
 
         // Check for player death
         if (player_stats && !player_stats->is_alive()) {

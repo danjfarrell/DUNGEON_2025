@@ -162,3 +162,36 @@ struct Dead {
 struct WantsToAct {
     // Tag component
 };
+
+// Marks an entity as an item that can be picked up
+struct Item {
+    std::string item_type;  // "gold", "potion", "weapon", etc.
+    int quantity;           // How many (for stackable items like gold)
+
+    Item(const std::string& type = "unknown", int qty = 1)
+        : item_type(type), quantity(qty) {
+    }
+};
+
+// Player's inventory - stores list of item entities
+struct Inventory {
+    std::vector<Entity> items;
+    int gold;  // Quick access to gold count
+
+    Inventory() : gold(0) {}
+
+    void add_item(Entity item_entity) {
+        items.push_back(item_entity);
+    }
+
+    bool has_item(Entity item_entity) const {
+        return std::find(items.begin(), items.end(), item_entity) != items.end();
+    }
+
+    void remove_item(Entity item_entity) {
+        auto it = std::find(items.begin(), items.end(), item_entity);
+        if (it != items.end()) {
+            items.erase(it);
+        }
+    }
+};

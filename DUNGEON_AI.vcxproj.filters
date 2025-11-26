@@ -131,6 +131,9 @@
     <ClInclude Include="src\world\Map.h">
       <Filter>Header Files\world</Filter>
     </ClInclude>
+    <ClInclude Include="src\systems\ItemPickupSystem.h">
+      <Filter>Header Files\systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">

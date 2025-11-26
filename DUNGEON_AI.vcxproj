@@ -153,6 +153,7 @@
     <ClInclude Include="src\systems\Camera.h" />
     <ClInclude Include="src\systems\CombatSystem.h" />
     <ClInclude Include="src\systems\DeathSystem.h" />
+    <ClInclude Include="src\systems\ItemPickupSystem.h" />
     <ClInclude Include="src\systems\MapRenderSystem.h" />
     <ClInclude Include="src\systems\RenderSystem.h" />
     <ClInclude Include="src\systems\SpriteUpdateSystem.h" />
