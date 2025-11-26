@@ -7,6 +7,7 @@
 #include "CombatSystem.h"
 #include <cmath>
 #include <random>
+#include <iostream>
 
 class AISystem : public System {
 private:
@@ -21,15 +22,21 @@ public:
 
     void update(ComponentManager& components, float dt) override {
         // Find player position
+		//std::cout << "AISystem Update Called" << std::endl;
         Entity player = find_player(components);
-        if (player == 0) return;  // No player found
-
+        if (player == 0) 
+        {
+            std::cout << "No player found" << std::endl;
+            return;  // No player found
+        }
+       
         Position* player_pos = components.get_component<Position>(player);
         if (!player_pos) return;
-
+        std::cout << player_pos << std::endl;
         // Process all entities that want to act
         auto* wants_to_act = components.get_array<WantsToAct>();
         if (!wants_to_act) return;
+        std::cout << wants_to_act << std::endl;
 
         auto& acting_entities = wants_to_act->get_entities();
 

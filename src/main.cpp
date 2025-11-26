@@ -374,19 +374,19 @@ int main(int argc, char* argv[]) {
                     message_log.add_info(minimap.get_show_fog() ?
                         "Fog of war enabled" : "Fog of war disabled");
                 }
-                if (event.key.key == SDLK_D) {
-                    auto* hp = world.get_component<Health>(player);
-                    if (hp && hp->current > 0) {
-                        hp->current -= 10;
-                        health_bar.trigger_flash();  // Flash effect
-                        message_log.add_combat("You take 10 damage! (Test)");
+                //if (event.key.key == SDLK_D) {
+                //    auto* hp = world.get_component<Health>(player);
+                //    if (hp && hp->current > 0) {
+                //        hp->current -= 10;
+                //        health_bar.trigger_flash();  // Flash effect
+                //        message_log.add_combat("You take 10 damage! (Test)");
 
-                        if (hp->current <= 0) {
-                            hp->current = 0;
-                            message_log.add_combat("You died!");
-                        }
-                    }
-                }
+                //        if (hp->current <= 0) {
+                //            hp->current = 0;
+                //            message_log.add_combat("You died!");
+                //        }
+                //    }
+                //}
 
                 // Only allow player input during player turn
                 if (!turn_manager.is_player_turn()) {
@@ -612,7 +612,7 @@ int main(int argc, char* argv[]) {
         // Render health bar
         auto* player_health = world.get_component<Health>(player);
         if (player_health) {
-            health_bar.render(player_health->current, player_health->maximum);
+            //health_bar.render(player_health->current, player_health->maximum);
         }
 
 
