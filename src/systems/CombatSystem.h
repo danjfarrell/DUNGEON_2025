@@ -6,6 +6,7 @@
 #include "../components/Components.h"
 #include "../ui/MessageLog.h"
 #include "../graphics/SpriteManager.h"
+#include "../data/EnemyData.h"
 #include <algorithm>
 #include <random>
 
@@ -14,11 +15,12 @@ private:
     MessageLog* message_log;
     World* world;  // NEW: Need world to spawn items
     SpriteManager* sprite_manager;  // NEW: For item sprites
+    EnemyDataManager* enemy_data;  // NEW!
     std::mt19937 rng;  // NEW: For random gold amounts
 
 public:
-    CombatSystem(MessageLog* log, World* w, SpriteManager* sm)
-        : message_log(log), world(w), sprite_manager(sm), rng(std::random_device{}()) {
+    CombatSystem(MessageLog* log, World* w, SpriteManager* sm, EnemyDataManager* ed)
+        : message_log(log), world(w), sprite_manager(sm), enemy_data(ed), rng(std::random_device{}()) {
     }
 
     void update(ComponentManager& components, float dt) override {
@@ -74,74 +76,112 @@ public:
 
     // Mark entity as dead and spawn loot
     void handle_death(ComponentManager& components, Entity entity) {
-        // Get position before we do anything
+        // IMPORTANT: Copy position VALUES, not pointer!
+        int death_x = -1;
+        int death_y = -1;
         Position* death_pos = components.get_component<Position>(entity);
+        if (death_pos) {
+            death_x = death_pos->x;
+            death_y = death_pos->y;
+        }
 
-        // Check if this was a goblin (or other enemy that drops loot)
+        // Check if this is an enemy with loot data
+        EnemyType* enemy_type = components.get_component<EnemyType>(entity);
         Name* entity_name = components.get_component<Name>(entity);
-        bool was_goblin = (entity_name && entity_name->name == "Goblin");
 
         // Add Dead tag
         components.add_component(entity, Dead{});
 
-        // Remove blocking so player can walk over the corpse/gold
+        // IMPORTANT: Completely remove entity from map to fix corpse bug
         if (components.has_component<BlocksMovement>(entity)) {
             components.remove_component<BlocksMovement>(entity);
         }
-
-        // Remove AI
         if (components.has_component<AI>(entity)) {
             components.remove_component<AI>(entity);
         }
-
-        // Remove Energy
         if (components.has_component<Energy>(entity)) {
             components.remove_component<Energy>(entity);
         }
-
-        // If goblin, spawn gold pile at death location
-        if (was_goblin && death_pos && world) {
-            std::uniform_int_distribution<int> gold_dist(5, 15);
-            int gold_amount = gold_dist(rng);
-
-            spawn_gold(death_pos->x, death_pos->y, gold_amount);
-
-            if (message_log) {
-                message_log->add_success("The goblin drops " + std::to_string(gold_amount) + " gold!");
-            }
+        if (components.has_component<Renderable>(entity)) {
+            components.remove_component<Renderable>(entity);
+        }
+        if (components.has_component<SpriteBase>(entity)) {
+            components.remove_component<SpriteBase>(entity);
+        }
+        if (components.has_component<Position>(entity)) {
+            components.remove_component<Position>(entity);
         }
 
-        // Change sprite to corpse/invisible (for non-loot-dropping enemies)
-        if (!was_goblin) {
-            SpriteBase* sprite = components.get_component<SpriteBase>(entity);
-            if (sprite) {
-                sprite->base_name = "corpse";
-                sprite->variant = "";
-            }
-        }
-        // For goblins, we'll hide the sprite since gold replaced it
-        else {
-            Renderable* rend = components.get_component<Renderable>(entity);
-            if (rend) {
-                rend->layer = -100;  // Hide it way below everything
+        // Drop loot if this was an enemy (use the copied values!)
+        if (enemy_type && death_x >= 0 && death_y >= 0 && world && enemy_data) {
+            const EnemyDefinition* def = enemy_data->get_enemy(enemy_type->enemy_id);
+            if (def) {
+                drop_loot(*def, death_x, death_y);
             }
         }
     }
 
 private:
+    // Roll loot based on enemy's loot table
+    void drop_loot(const EnemyDefinition& enemy, int x, int y) {
+        std::uniform_real_distribution<float> chance_dist(0.0f, 1.0f);
+
+        // Drop gold
+        if (chance_dist(rng) < enemy.loot_table.gold.chance) {
+            std::uniform_int_distribution<int> gold_dist(
+                enemy.loot_table.gold.min,
+                enemy.loot_table.gold.max
+            );
+            int gold_amount = gold_dist(rng);
+
+            if (gold_amount > 0) {
+                spawn_gold(x, y, gold_amount);
+
+                if (message_log) {
+                    message_log->add_success(enemy.name + " drops " +
+                        std::to_string(gold_amount) + " gold!");
+                }
+            }
+        }
+
+        // Drop items
+        for (const ItemDrop& item_drop : enemy.loot_table.items) {
+            if (chance_dist(rng) < item_drop.chance) {
+                spawn_item(x, y, item_drop.item_type, item_drop.quantity);
+
+                if (message_log) {
+                    message_log->add_success(enemy.name + " drops " + item_drop.item_type + "!");
+                }
+            }
+        }
+    }
+
     void spawn_gold(int x, int y, int amount) {
         Entity gold = world->create_entity();
         world->add_component(gold, Position{ x, y });
         world->add_component(gold, Name{ "Gold" });
         world->add_component(gold, Item{ "gold", amount });
 
-        // Use gold sprite (you'll need to add this to sprites.json)
         if (sprite_manager->has_sprite("gold")) {
             world->add_component(gold, sprite_manager->create_renderable("gold"));
         }
         else {
-            // Fallback: use a simple sprite
-            world->add_component(gold, Renderable{ 0, 4, 1, 0 });  // Adjust coords as needed
+            world->add_component(gold, Renderable{ 0, 4, 1, 0 });
+        }
+    }
+
+    void spawn_item(int x, int y, const std::string& item_type, int quantity) {
+        Entity item = world->create_entity();
+        world->add_component(item, Position{ x, y });
+        world->add_component(item, Name{ item_type });
+        world->add_component(item, Item{ item_type, quantity });
+
+        std::string sprite_name = "item." + item_type;
+        if (sprite_manager->has_sprite(sprite_name)) {
+            world->add_component(item, sprite_manager->create_renderable(sprite_name));
+        }
+        else {
+            world->add_component(item, Renderable{ 0, 5, 1, 0 });
         }
     }
 };

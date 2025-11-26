@@ -4,7 +4,7 @@
 #include "ComponentManager.h"
 #include <vector>
 #include <memory>
-#include "world/TileVisibility.h"   // ★ NEW INCLUDE
+#include "../world/TileVisibility.h"   //  NEW INCLUDE
 
 // Forward declaration
 class System;

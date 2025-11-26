@@ -195,3 +195,11 @@ struct Inventory {
         }
     }
 };
+
+
+// NEW: Store enemy type ID for loot/xp lookup
+struct EnemyType {
+    std::string enemy_id;  // e.g., "goblin", "orc", "rat"
+
+    EnemyType(const std::string& id = "") : enemy_id(id) {}
+};

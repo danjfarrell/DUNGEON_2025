@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\components\Components.h" />
+    <ClInclude Include="src\data\EnemyData.h" />
     <ClInclude Include="src\ecs\ComponentArray.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
     <ClInclude Include="src\ecs\Entity.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="src\ecs\World.h" />
     <ClInclude Include="src\graphics\SpriteConfig.h" />
     <ClInclude Include="src\graphics\SpriteManager.h" />
+    <ClInclude Include="src\spawning\EnemySpawner.h" />
     <ClInclude Include="src\systems\AISystem.h" />
     <ClInclude Include="src\systems\Camera.h" />
     <ClInclude Include="src\systems\CombatSystem.h" />
@@ -168,6 +170,7 @@
     <ClInclude Include="src\world\TileVisibility.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ouput\assets\enemies.json" />
     <None Include="ouput\assets\sprites.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

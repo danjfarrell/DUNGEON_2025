@@ -34,6 +34,12 @@
     <Filter Include="Header Files\systems">
       <UniqueIdentifier>{f4f19c7b-9551-4b1f-ba85-3295699d1697}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\data">
+      <UniqueIdentifier>{0a1f11d7-2201-489b-8cda-20262e6c640c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\spawning">
+      <UniqueIdentifier>{071971d6-f930-408a-8c83-21755978c638}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -122,9 +128,6 @@
     <ClInclude Include="src\utils\Logger.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
-    <ClInclude Include="src\world\TileVisibility.h">
-      <Filter>Header Files\world</Filter>
-    </ClInclude>
     <ClInclude Include="src\world\MapGenerators.h">
       <Filter>Header Files\world</Filter>
     </ClInclude>
@@ -134,9 +137,21 @@
     <ClInclude Include="src\systems\ItemPickupSystem.h">
       <Filter>Header Files\systems</Filter>
     </ClInclude>
+    <ClInclude Include="src\data\EnemyData.h">
+      <Filter>Header Files\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spawning\EnemySpawner.h">
+      <Filter>Header Files\spawning</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\TileVisibility.h">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ouput\assets\enemies.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

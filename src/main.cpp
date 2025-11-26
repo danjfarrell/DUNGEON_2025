@@ -22,6 +22,19 @@
 #include "systems/AISystem.h"
 #include "systems/DeathSystem.h"
 #include "systems/ItemPickupSystem.h"  // NEW!
+#include "data/EnemyData.h"
+#include "spawning/EnemySpawner.h"
+
+
+
+
+// Helper function to convert AI string to enum
+AI::Type parse_ai_type(const std::string& ai_str) {
+    if (ai_str == "aggressive") return AI::AGGRESSIVE;
+    if (ai_str == "patrol") return AI::PATROL;
+    if (ai_str == "defensive") return AI::DEFENSIVE;
+    return AI::IDLE;
+}
 
 
 // Add this helper function to main.cpp (before main() function)
@@ -250,13 +263,21 @@ int main(int argc, char* argv[]) {
 
     // ========================================
 
+    // Load enemy data
+    EnemyDataManager enemy_data;
+    if (!enemy_data.load_from_file("assets/enemies.json")) {
+        LOG_ERROR("Failed to load enemy data!");
+    }
+
     // Create turn manager
     TurnManager turn_manager(&message_log);
 
     // Add combat system (doesn't run in update loop, called manually)
     // IMPORTANT: Pass world and sprite_manager now!
-    auto* combat_system = new CombatSystem(&message_log, &world, &sprite_manager);
+    auto* combat_system = new CombatSystem(&message_log, &world, &sprite_manager, &enemy_data);
     
+    // Create enemy spawner
+    EnemySpawner enemy_spawner(&world, &sprite_manager, &enemy_data);
 
     // Add systems to world
     world.add_system<AISystem>(&game_map, combat_system);  // NEW!
@@ -332,23 +353,34 @@ int main(int argc, char* argv[]) {
     message_log.add_info("Use arrow keys to move. Press ESC to quit.");
 
 
-    // Spawn goblins in rooms
+    // Spawn enemies in rooms using the spawner
     const auto& rooms = game_map.get_rooms();
-    int goblin_count = 0;
+    int enemy_count = 0;
     for (size_t i = 1; i < rooms.size() && i < 4; i++) {
-        Entity goblin = world.create_entity();
-        world.add_component(goblin, Position{ rooms[i].center_x(), rooms[i].center_y() });
-        world.add_component(goblin, sprite_manager.create_renderable("goblin.idle"));
-        world.add_component(goblin, BlocksMovement{});
-        world.add_component(goblin, Name{ "Goblin" });  // NEW!
-        world.add_component(goblin, CombatStats{ 3, 0, 10 });  // NEW! (attack=3, defense=0, hp=10)
-        world.add_component(goblin, AI{ AI::AGGRESSIVE });  // NEW!
-        world.add_component(goblin, Energy{ 100 });  // NEW!
-        goblin_count++;
+        enemy_spawner.spawn("goblin", rooms[i].center_x(), rooms[i].center_y());
+        enemy_count++;
     }
 
-    message_log.add_warning("You sense " + std::to_string(goblin_count) +
-        " goblins lurking in the darkness...");
+    message_log.add_warning("You sense " + std::to_string(enemy_count) +
+        " enemies lurking in the darkness...");
+
+    //// Spawn goblins in rooms
+    //const auto& rooms = game_map.get_rooms();
+    //int goblin_count = 0;
+    //for (size_t i = 1; i < rooms.size() && i < 4; i++) {
+    //    Entity goblin = world.create_entity();
+    //    world.add_component(goblin, Position{ rooms[i].center_x(), rooms[i].center_y() });
+    //    world.add_component(goblin, sprite_manager.create_renderable("goblin.idle"));
+    //    world.add_component(goblin, BlocksMovement{});
+    //    world.add_component(goblin, Name{ "Goblin" });  // NEW!
+    //    world.add_component(goblin, CombatStats{ 3, 0, 10 });  // NEW! (attack=3, defense=0, hp=10)
+    //    world.add_component(goblin, AI{ AI::AGGRESSIVE });  // NEW!
+    //    world.add_component(goblin, Energy{ 100 });  // NEW!
+    //    goblin_count++;
+    //}
+
+    //message_log.add_warning("You sense " + std::to_string(goblin_count) +
+    //    " goblins lurking in the darkness...");
 
     // Game loop
     bool running = true;
