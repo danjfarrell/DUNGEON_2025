@@ -16,11 +16,12 @@ private:
     World* world;  // NEW: Need world to spawn items
     SpriteManager* sprite_manager;  // NEW: For item sprites
     EnemyDataManager* enemy_data;  // NEW!
+    class ExperienceSystem* xp_system;
     std::mt19937 rng;  // NEW: For random gold amounts
 
 public:
-    CombatSystem(MessageLog* log, World* w, SpriteManager* sm, EnemyDataManager* ed)
-        : message_log(log), world(w), sprite_manager(sm), enemy_data(ed), rng(std::random_device{}()) {
+    CombatSystem(MessageLog* log, World* w, SpriteManager* sm, EnemyDataManager* ed, ExperienceSystem* xp)
+        : message_log(log), world(w), sprite_manager(sm), enemy_data(ed), xp_system(xp), rng(std::random_device{}()) {
     }
 
     void update(ComponentManager& components, float dt) override {
@@ -44,7 +45,6 @@ public:
 
         // Calculate damage: attack - defense, minimum 1
         int damage = std::max(1, attacker_stats->attack - defender_stats->defense);
-
         defender_stats->take_damage(damage);
 
         // Get names for combat message
@@ -110,6 +110,14 @@ public:
         }
         if (components.has_component<Position>(entity)) {
             components.remove_component<Position>(entity);
+        }
+
+        // Award XP
+        if (enemy_type && killer != 0 && xp_system && enemy_data) {
+            int xp_reward = xp_system->get_xp_for_kill(enemy_type->enemy_id, enemy_data);
+            if (xp_reward > 0) {
+                xp_system->award_xp(components, killer, xp_reward);
+            }
         }
 
         // Drop loot if this was an enemy (use the copied values!)

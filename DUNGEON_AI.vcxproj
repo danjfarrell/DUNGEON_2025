@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\components\Components.h" />
+    <ClInclude Include="src\components\MagicComponents.h" />
     <ClInclude Include="src\data\EnemyData.h" />
     <ClInclude Include="src\ecs\ComponentArray.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
@@ -150,21 +151,26 @@
     <ClInclude Include="src\ecs\World.h" />
     <ClInclude Include="src\graphics\SpriteConfig.h" />
     <ClInclude Include="src\graphics\SpriteManager.h" />
+    <ClInclude Include="src\magic\SpellDatabase.h" />
     <ClInclude Include="src\spawning\EnemySpawner.h" />
     <ClInclude Include="src\systems\AISystem.h" />
     <ClInclude Include="src\systems\Camera.h" />
     <ClInclude Include="src\systems\CombatSystem.h" />
     <ClInclude Include="src\systems\DeathSystem.h" />
+    <ClInclude Include="src\systems\ExperienceSystem.h" />
     <ClInclude Include="src\systems\ItemPickupSystem.h" />
+    <ClInclude Include="src\systems\MagicSystem.h" />
     <ClInclude Include="src\systems\MapRenderSystem.h" />
     <ClInclude Include="src\systems\RenderSystem.h" />
     <ClInclude Include="src\systems\SpriteUpdateSystem.h" />
+    <ClInclude Include="src\systems\StairSystem.h" />
     <ClInclude Include="src\systems\TurnManager.h" />
     <ClInclude Include="src\ui\Healthbar.h" />
     <ClInclude Include="src\ui\Messagelog.h" />
     <ClInclude Include="src\ui\Minimap.h" />
     <ClInclude Include="src\ui\UILayout.h" />
     <ClInclude Include="src\utils\Logger.h" />
+    <ClInclude Include="src\world\DungeonManager.h" />
     <ClInclude Include="src\world\Map.h" />
     <ClInclude Include="src\world\MapGenerators.h" />
     <ClInclude Include="src\world\TileVisibility.h" />

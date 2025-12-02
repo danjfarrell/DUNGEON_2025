@@ -40,6 +40,9 @@
     <Filter Include="Header Files\spawning">
       <UniqueIdentifier>{071971d6-f930-408a-8c83-21755978c638}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\magic">
+      <UniqueIdentifier>{6978e2d3-eac8-4bcd-9247-5a9a30c700e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -145,6 +148,24 @@
     </ClInclude>
     <ClInclude Include="src\world\TileVisibility.h">
       <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\magic\SpellDatabase.h">
+      <Filter>Header Files\magic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\MagicComponents.h">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\MagicSystem.h">
+      <Filter>Header Files\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\ExperienceSystem.h">
+      <Filter>Header Files\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\DungeonManager.h">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\StairSystem.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

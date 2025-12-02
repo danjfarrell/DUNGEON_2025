@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../ecs/Entity.h"
+// Include magic components
+#include "MagicComponents.h"
 #include <string>
 #include <SDL3/SDL.h>
 
@@ -202,4 +204,48 @@ struct EnemyType {
     std::string enemy_id;  // e.g., "goblin", "orc", "rat"
 
     EnemyType(const std::string& id = "") : enemy_id(id) {}
+};
+
+// Experience and leveling
+struct Experience {
+    int current_xp;
+    int level;
+    int xp_to_next_level;
+
+    Experience(int lvl = 1, int xp = 0)
+        : current_xp(xp), level(lvl) {
+        xp_to_next_level = calculate_xp_for_level(lvl + 1);
+    }
+
+    static int calculate_xp_for_level(int level) {
+        return 100 * level * level;
+    }
+
+    bool add_xp(int amount) {
+        current_xp += amount;
+        return current_xp >= xp_to_next_level;
+    }
+
+    void level_up() {
+        level++;
+        xp_to_next_level = calculate_xp_for_level(level + 1);
+    }
+
+    float get_xp_progress() const {
+        int xp_for_current_level = calculate_xp_for_level(level);
+        int xp_in_current_level = current_xp - xp_for_current_level;
+        int xp_needed_for_level = xp_to_next_level - xp_for_current_level;
+
+        if (xp_needed_for_level <= 0) return 1.0f;
+
+        return static_cast<float>(xp_in_current_level) / xp_needed_for_level;
+    }
+
+    int get_current_level_xp() const {
+        return current_xp - calculate_xp_for_level(level);
+    }
+
+    int get_current_level_requirement() const {
+        return xp_to_next_level - calculate_xp_for_level(level);
+    }
 };
