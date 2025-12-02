@@ -254,6 +254,24 @@ public:
         return true;
     }
 
+    // Add to Minimap class in ui/Minimap.h
+    void set_map(Map* new_map) {
+        game_map = new_map;
+
+        // Resize explored/visible arrays
+        explored.clear();
+        visible.clear();
+        explored.resize(game_map->get_height());
+        visible.resize(game_map->get_height());
+
+        for (int i = 0; i < game_map->get_height(); i++) {
+            explored[i].resize(game_map->get_width(), false);
+            visible[i].resize(game_map->get_width(), false);
+        }
+    }
+
+
+
     // Settings
     void set_show_fog(bool enabled) { show_fog = enabled; }
     void set_show_entities(bool enabled) { show_entities = enabled; }

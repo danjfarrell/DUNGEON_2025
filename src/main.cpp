@@ -286,8 +286,9 @@ int main(int argc, char* argv[]) {
 
     // Add combat system (doesn't run in update loop, called manually)
     // IMPORTANT: Pass world and sprite_manager now!
-    auto* xp_system = new ExperienceSystem(&message_log);
-    auto* combat_system = new CombatSystem(&message_log, &world, &sprite_manager, &enemy_data);
+    // Add systems through world (world owns them)
+    auto* xp_system = world.add_system<ExperienceSystem>(&message_log);
+    auto* combat_system = world.add_system<CombatSystem>(&message_log, &world, &sprite_manager, &enemy_data, xp_system);
     auto* magic_system = world.add_system<MagicSystem>(&message_log, game_map);
 
     // Create enemy spawner
@@ -303,12 +304,12 @@ int main(int argc, char* argv[]) {
     auto* map_render_system = world.add_system<MapRenderSystem>(
         &sprite_manager, &game_map, 2, &camera, &ui_layout, tile_vis);  // Pass camera
     auto* render_system = world.add_system<RenderSystem>(
-        &sprite_manager, 2, &camera, &ui_layout);  // Pass camera
+        &sprite_manager, 2, &camera, &ui_layout, tile_vis);  // Pass camera
 
     // Create minimap
     Minimap minimap(
         renderer,
-        &game_map,
+        game_map,
         &world,
         ui_layout.minimap.x,
         ui_layout.minimap.y,
@@ -682,7 +683,7 @@ int main(int argc, char* argv[]) {
                     if (world.has_component<CombatStats>(e)) world.get_component_manager().remove_component<CombatStats>(e);
                     if (world.has_component<Energy>(e)) world.get_component_manager().remove_component<Energy>(e);
                     if (world.has_component<EnemyType>(e)) world.get_component_manager().remove_component<EnemyType>(e);
-                    if (world.has_component<n>(e)) world.get_component_manager().remove_component<n>(e);
+                    if (world.has_component<Name>(e)) world.get_component_manager().remove_component<Name>(e);
                 }
             }
 
@@ -699,6 +700,13 @@ int main(int argc, char* argv[]) {
                 game_map->get_width(), game_map->get_height(), TILE_SIZE);
             map_render_system->set_camera(&camera);
             render_system->set_camera(&camera);
+
+            // Instead of recreating, just update:
+            minimap.set_map(game_map);
+            minimap.reveal_all();
+            minimap.center_on(spawn_pos.x, spawn_pos.y);
+
+
 
             Position spawn_pos = dungeon_manager.get_player_spawn_position();
             Position* player_pos = world.get_component<Position>(player);

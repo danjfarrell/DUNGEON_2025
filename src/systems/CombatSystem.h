@@ -63,7 +63,7 @@ public:
 
         // Check if defender died
         if (!defender_stats->is_alive()) {
-            handle_death(components, defender);
+            handle_death(components, defender, attacker);
 
             if (message_log) {
                 std::string msg = defender_str + " dies!";
@@ -75,7 +75,7 @@ public:
     }
 
     // Mark entity as dead and spawn loot
-    void handle_death(ComponentManager& components, Entity entity) {
+    void handle_death(ComponentManager& components, Entity entity, Entity killer) {
         // IMPORTANT: Copy position VALUES, not pointer!
         int death_x = -1;
         int death_y = -1;
