@@ -35,6 +35,13 @@ public:
     void set_camera(Camera* cam) { camera = cam; }
 
     // ========================================
+    // ADD THIS METHOD - Missing set_map()
+    // ========================================
+    void set_map(Map* map) {
+        game_map = map;
+    }
+
+    // ========================================
     // ADD THIS METHOD
     // ========================================
     void set_tile_visibility(TileVisibility* visibility) {

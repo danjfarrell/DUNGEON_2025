@@ -4,26 +4,35 @@
 #include <functional>
 #include "ecs/World.h"
 #include "components/Components.h"
+#include "components/MagicComponents.h"
 #include "systems/RenderSystem.h"
 #include "systems/SpriteUpdateSystem.h"
 #include "systems/Camera.h"
+#include "systems/MapRenderSystem.h"
+#include "systems/TurnManager.h"
+#include "systems/CombatSystem.h"
+#include "systems/AISystem.h"
+#include "systems/DeathSystem.h"
+#include "systems/ItemPickupSystem.h"  // NEW!
+#include "systems/MagicSystem.h"
+#include "systems/ExperienceSystem.h"
+#include "systems/StairSystem.h"
+
 #include "graphics/SpriteManager.h"
 #include "world/Map.h"
 #include "world/MapGenerators.h"
-#include "systems/MapRenderSystem.h"
+#include "world/DungeonManager.h"
+
 #include "utils/Logger.h"
 #include "ui/MessageLog.h" 
 #include "ui/UILayout.h"  // NEW
 #include "ui/Minimap.h"
 #include "world/TileVisibility.h"  // ADD THIS INCLUD
 #include "ui/HealthBar.h"
-#include "systems/TurnManager.h"
-#include "systems/CombatSystem.h"
-#include "systems/AISystem.h"
-#include "systems/DeathSystem.h"
-#include "systems/ItemPickupSystem.h"  // NEW!
+
 #include "data/EnemyData.h"
 #include "spawning/EnemySpawner.h"
+#include "magic/SpellDatabase.h"
 
 
 
@@ -168,12 +177,16 @@ int main(int argc, char* argv[]) {
 
     sprite_manager.dump_config_to_log();
 
-    // Create map and generate
-    Map game_map(50, 30, 12345);
-    RoomCorridorGenerator gen(8, 4, 10);
-    game_map.generate(gen);
+    // Create dungeon manager
+    DungeonManager dungeon_manager(80, 50);
+    Map* game_map = dungeon_manager.generate_level(1);
 
-    game_map.dump_to_log();
+    // Create map and generate
+    //Map game_map(50, 30, 12345);
+    //RoomCorridorGenerator gen(8, 4, 10);
+    //game_map.generate(gen);
+
+    //game_map.dump_to_log();
 
 
 
@@ -185,8 +198,7 @@ int main(int argc, char* argv[]) {
     Camera camera(
         ui_layout.game_viewport.w,
         ui_layout.game_viewport.h,
-        game_map.get_width(),
-        game_map.get_height(),
+        game_map->get_width(), game_map->get_height(),
         TILE_SIZE
     );
     // Create message log using layout dimensions
@@ -252,7 +264,7 @@ int main(int argc, char* argv[]) {
     World world;
 
     // Initialize visibility system
-    world.initialize_tile_visibility(game_map.get_width(), game_map.get_height());
+    world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
     TileVisibility* tile_vis = world.get_tile_visibility();
 
     // Option 1: Reveal all for testing (comment out for real fog of war)
@@ -274,8 +286,11 @@ int main(int argc, char* argv[]) {
 
     // Add combat system (doesn't run in update loop, called manually)
     // IMPORTANT: Pass world and sprite_manager now!
-    auto* combat_system = new CombatSystem(&message_log, &world, &sprite_manager, &enemy_data);
-    
+    // Add systems through world (world owns them)
+    auto* xp_system = world.add_system<ExperienceSystem>(&message_log);
+    auto* combat_system = world.add_system<CombatSystem>(&message_log, &world, &sprite_manager, &enemy_data, xp_system);
+    auto* magic_system = world.add_system<MagicSystem>(&message_log, game_map);
+
     // Create enemy spawner
     EnemySpawner enemy_spawner(&world, &sprite_manager, &enemy_data);
 
@@ -283,6 +298,7 @@ int main(int argc, char* argv[]) {
     world.add_system<AISystem>(&game_map, combat_system);  // NEW!
     world.add_system<ItemPickupSystem>(&message_log);  // NEW! Runs every frame
     world.add_system<DeathSystem>();  // NEW!
+    auto* stair_system = world.add_system<StairSystem>(game_map, &dungeon_manager, &message_log);
 
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
     auto* map_render_system = world.add_system<MapRenderSystem>(
@@ -293,7 +309,7 @@ int main(int argc, char* argv[]) {
     // Create minimap
     Minimap minimap(
         renderer,
-        &game_map,
+        game_map,
         &world,
         ui_layout.minimap.x,
         ui_layout.minimap.y,
@@ -305,7 +321,7 @@ int main(int argc, char* argv[]) {
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
-    game_map.dump_with_sprites_to_log(
+    game_map->dump_with_sprites_to_log(
         [map_render_system](int x, int y, TileType tile) {
             return map_render_system->get_sprite_name_for_tile(x, y, tile);
         },
@@ -313,7 +329,7 @@ int main(int argc, char* argv[]) {
         30   // height
     );
 
-    game_map.dump_sprite_grid_to_log(
+    game_map->dump_sprite_grid_to_log(
         [map_render_system](int x, int y, TileType tile) {
             return map_render_system->get_sprite_name_for_tile(x, y, tile);
         },
@@ -324,18 +340,20 @@ int main(int argc, char* argv[]) {
 
     // Spawn player in first room
     Entity player = world.create_entity();
-    const Room* first_room = nullptr;
-    if (!game_map.get_rooms().empty()) {
-        first_room = &game_map.get_rooms()[0];
-        world.add_component(player, Position{ first_room->center_x(), first_room->center_y() });
-        // NEW: Center camera on player at start
-        camera.center_on(first_room->center_x(), first_room->center_y());
-        tile_vis->update_fov(first_room->center_x(), first_room->center_y(), 10);
-    }
-    else {
-        world.add_component(player, Position{ 6, 6 });
-        camera.center_on(6, 6);
-    }
+    //const Room* first_room = nullptr;
+    //if (!game_map.get_rooms().empty()) {
+    //    first_room = &game_map.get_rooms()[0];
+    //    world.add_component(player, Position{ first_room->center_x(), first_room->center_y() });
+    //    // NEW: Center camera on player at start
+    //    camera.center_on(first_room->center_x(), first_room->center_y());
+    //    tile_vis->update_fov(first_room->center_x(), first_room->center_y(), 10);
+    //}
+    //else {
+    //    world.add_component(player, Position{ 6, 6 });
+    //    camera.center_on(6, 6);
+    //}
+    Position spawn_pos = dungeon_manager.get_player_spawn_position();
+    world.add_component(player, spawn_pos);
     world.add_component(player, SpriteBase{ "player", "south" });
     world.add_component(player, Facing{ Facing::SOUTH });
     world.add_component(player, sprite_manager.create_renderable("player.south"));
@@ -347,22 +365,43 @@ int main(int argc, char* argv[]) {
     world.add_component(player, CombatStats{ 5, 1, 30 });  // NEW! (attack=5, defense=1, hp=30)
     world.add_component(player, Energy{ 100 });  // NEW!
     world.add_component(player, Inventory{});  // NEW!
+    world.add_component(player, Experience{ 1, 0 });
+    world.add_component(player, Intelligence{ 10 });
+    world.add_component(player, Mana{ 50, 5 });
+    world.add_component(player, SpellBook{});
+   
+    camera.center_on(spawn_pos.x, spawn_pos.y);
+    tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
 
     // NEW: Welcome message
     message_log.add_success("Welcome to the dungeon!");
     message_log.add_info("Use arrow keys to move. Press ESC to quit.");
 
-
-    // Spawn enemies in rooms using the spawner
-    const auto& rooms = game_map.get_rooms();
-    int enemy_count = 0;
-    for (size_t i = 1; i < rooms.size() && i < 4; i++) {
-        enemy_spawner.spawn("goblin", rooms[i].center_x(), rooms[i].center_y());
-        enemy_count++;
+    // Teach starting spells
+    magic_system->learn_spell(world.get_component_manager(), player, "magic_missile");
+    magic_system->learn_spell(world.get_component_manager(), player, "minor_heal");
+    SpellBook* player_spellbook = world.get_component<SpellBook>(player);
+    if (player_spellbook) {
+        player_spellbook->equip_to_slot(0, 0);
+        player_spellbook->equip_to_slot(1, 1);
     }
+    
+    dungeon_manager.spawn_enemies(enemy_spawner, world);
 
-    message_log.add_warning("You sense " + std::to_string(enemy_count) +
-        " enemies lurking in the darkness...");
+    message_log.add_success("Welcome to the dungeon!");
+    message_log.add_info("Dungeon Level 1");
+
+
+    //// Spawn enemies in rooms using the spawner
+    //const auto& rooms = game_map.get_rooms();
+    //int enemy_count = 0;
+    //for (size_t i = 1; i < rooms.size() && i < 4; i++) {
+    //    enemy_spawner.spawn("goblin", rooms[i].center_x(), rooms[i].center_y());
+    //    enemy_count++;
+    //}
+
+    //message_log.add_warning("You sense " + std::to_string(enemy_count) +
+    //    " enemies lurking in the darkness...");
 
     //// Spawn goblins in rooms
     //const auto& rooms = game_map.get_rooms();
@@ -404,6 +443,41 @@ int main(int argc, char* argv[]) {
                 if (event.key.key == SDLK_ESCAPE) {
                     running = false;
                 }
+
+                // Spell casting
+                if (event.key.key == SDLK_1) {
+                    magic_system->cast_spell(world.get_component_manager(), player, 0);
+                }
+                else if (event.key.key == SDLK_2) {
+                    magic_system->cast_spell(world.get_component_manager(), player, 1);
+                }
+                else if (event.key.key == SDLK_3) {
+                    magic_system->cast_spell(world.get_component_manager(), player, 2);
+                }
+                else if (event.key.key == SDLK_4) {
+                    magic_system->cast_spell(world.get_component_manager(), player, 3);
+                }
+                else if (event.key.key == SDLK_5) {
+                    magic_system->cast_spell(world.get_component_manager(), player, 4);
+                }
+
+                // Stairs
+                if (event.key.key == SDLK_PERIOD && SDL_GetModState() & SDL_KMOD_SHIFT) {
+                    Position* pos = world.get_component<Position>(player);
+                    if (pos && game_map->get_tile(pos->x, pos->y) == TileType::STAIRS_DOWN) {
+                        stair_system->trigger_stairs_down();
+                    }
+                }
+                else if (event.key.key == SDLK_COMMA && SDL_GetModState() & SDL_KMOD_SHIFT) {
+                    Position* pos = world.get_component<Position>(player);
+                    if (pos && game_map->get_tile(pos->x, pos->y) == TileType::STAIRS_UP) {
+                        stair_system->trigger_stairs_up();
+                    }
+                }
+
+
+
+
                 // Optional: Add keybind to toggle fog
                 // In input handling:
                 if (event.key.key == SDLK_F) {
@@ -470,8 +544,8 @@ int main(int argc, char* argv[]) {
                     if (!tried_to_move) continue;
 
                     // Before moving, check map
-                    if (!game_map.is_walkable(new_x, new_y)) {
-                        TileType tile = game_map.get_tile(new_x, new_y);
+                    if (!game_map->is_walkable(new_x, new_y)) {
+                        TileType tile = game_map->get_tile(new_x, new_y);
                         if (tile == TileType::WALL) {
                             message_log.add_info("You bump into a wall.");
                         }
@@ -583,6 +657,83 @@ int main(int argc, char* argv[]) {
         }
 
 
+        // Level transitions
+        if (stair_system->was_triggered()) {
+            int new_depth = dungeon_manager.get_current_depth();
+            if (stair_system->is_descending()) {
+                new_depth++;
+                message_log.add_success("You descend deeper...");
+            }
+            else {
+                new_depth--;
+                if (new_depth < 1) new_depth = 1;
+                message_log.add_info("You ascend...");
+            }
+
+            // Clear entities
+            auto* all_entities = world.get_component_manager().get_array<Position>();
+            if (all_entities) {
+                auto& entities = all_entities->get_entities();
+                std::vector<Entity> to_remove;
+
+                for (Entity e : entities) {
+                    if (!world.has_component<PlayerControlled>(e)) {
+                        to_remove.push_back(e);
+                    }
+                }
+
+                for (Entity e : to_remove) {
+                    if (world.has_component<Position>(e)) world.get_component_manager().remove_component<Position>(e);
+                    if (world.has_component<Renderable>(e)) world.get_component_manager().remove_component<Renderable>(e);
+                    if (world.has_component<SpriteBase>(e)) world.get_component_manager().remove_component<SpriteBase>(e);
+                    if (world.has_component<AI>(e)) world.get_component_manager().remove_component<AI>(e);
+                    if (world.has_component<BlocksMovement>(e)) world.get_component_manager().remove_component<BlocksMovement>(e);
+                    if (world.has_component<CombatStats>(e)) world.get_component_manager().remove_component<CombatStats>(e);
+                    if (world.has_component<Energy>(e)) world.get_component_manager().remove_component<Energy>(e);
+                    if (world.has_component<EnemyType>(e)) world.get_component_manager().remove_component<EnemyType>(e);
+                    if (world.has_component<Name>(e)) world.get_component_manager().remove_component<Name>(e);
+                }
+            }
+
+            game_map = dungeon_manager.generate_level(new_depth);
+            stair_system->set_map(game_map);
+            map_render_system->set_map(game_map);
+
+            world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
+            tile_vis = world.get_tile_visibility();
+            map_render_system->set_tile_visibility(tile_vis);
+            render_system->set_tile_visibility(tile_vis);
+
+            camera = Camera(ui_layout.game_viewport.w, ui_layout.game_viewport.h,
+                game_map->get_width(), game_map->get_height(), TILE_SIZE);
+            map_render_system->set_camera(&camera);
+            render_system->set_camera(&camera);
+
+            // Instead of recreating, just update:
+            minimap.set_map(game_map);
+            minimap.reveal_all();
+            minimap.center_on(spawn_pos.x, spawn_pos.y);
+
+
+
+            Position spawn_pos = dungeon_manager.get_player_spawn_position();
+            Position* player_pos = world.get_component<Position>(player);
+            if (player_pos) {
+                player_pos->x = spawn_pos.x;
+                player_pos->y = spawn_pos.y;
+            }
+
+            camera.center_on(spawn_pos.x, spawn_pos.y);
+            tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
+
+            dungeon_manager.spawn_enemies(enemy_spawner, world);
+            message_log.add_info("Dungeon Level " + std::to_string(new_depth));
+        }
+
+
+
+
+
         // Clear screen to black
         SDL_SetRenderDrawColor(renderer, 20, 20, 30, 255);
         SDL_RenderClear(renderer);
@@ -614,18 +765,42 @@ int main(int argc, char* argv[]) {
                 ui_layout.top_bar.x + 20,
                 ui_layout.top_bar.y + 25);
         }
-        // NEW: Display gold count
+        // MP display
+        Mana* player_mana = world.get_component<Mana>(player);
+        if (player_mana && ui_font) {
+            std::string mp_text = "MP: " + std::to_string(player_mana->current) + "/" +
+                std::to_string(player_mana->maximum);
+            SDL_Color mp_color = { 100, 150, 255, 255 };
+
+            SDL_Surface* surface = TTF_RenderText_Blended(ui_font, mp_text.c_str(), 0, mp_color);
+            if (surface) {
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                if (texture) {
+                    SDL_FRect dest = {
+                        static_cast<float>(ui_layout.top_bar.x + 20),
+                        static_cast<float>(ui_layout.top_bar.y + 50),
+                        static_cast<float>(surface->w),
+                        static_cast<float>(surface->h)
+                    };
+                    SDL_RenderTexture(renderer, texture, nullptr, &dest);
+                    SDL_DestroyTexture(texture);
+                }
+                SDL_DestroySurface(surface);
+            }
+        }
+
+        // Gold display
         Inventory* player_inventory = world.get_component<Inventory>(player);
         if (player_inventory && ui_font) {
             std::string gold_text = "Gold: " + std::to_string(player_inventory->gold);
-            SDL_Color gold_color = { 255, 215, 0, 255 };  // Gold color!
+            SDL_Color gold_color = { 255, 215, 0, 255 };
 
             SDL_Surface* surface = TTF_RenderText_Blended(ui_font, gold_text.c_str(), 0, gold_color);
             if (surface) {
                 SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
                 if (texture) {
                     SDL_FRect dest = {
-                        static_cast<float>(ui_layout.top_bar.x + 250),  // To the right of HP
+                        static_cast<float>(ui_layout.top_bar.x + 250),
                         static_cast<float>(ui_layout.top_bar.y + 25),
                         static_cast<float>(surface->w),
                         static_cast<float>(surface->h)
@@ -635,6 +810,48 @@ int main(int argc, char* argv[]) {
                 }
                 SDL_DestroySurface(surface);
             }
+        }
+
+        // Level & XP display
+        Experience* player_xp = world.get_component<Experience>(player);
+        if (player_xp && ui_font) {
+            std::string level_text = "Level: " + std::to_string(player_xp->level);
+            SDL_Color level_color = { 100, 200, 255, 255 };
+
+            SDL_Surface* surface = TTF_RenderText_Blended(ui_font, level_text.c_str(), 0, level_color);
+            if (surface) {
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                if (texture) {
+                    SDL_FRect dest = {
+                        static_cast<float>(ui_layout.top_bar.x + 450),
+                        static_cast<float>(ui_layout.top_bar.y + 15),
+                        static_cast<float>(surface->w),
+                        static_cast<float>(surface->h)
+                    };
+                    SDL_RenderTexture(renderer, texture, nullptr, &dest);
+                    SDL_DestroyTexture(texture);
+                }
+                SDL_DestroySurface(surface);
+            }
+        }
+
+        // Depth display
+        std::string depth_text = "Depth: " + std::to_string(dungeon_manager.get_current_depth());
+        SDL_Color depth_color = { 255, 150, 50, 255 };
+        SDL_Surface* surface = TTF_RenderText_Blended(ui_font, depth_text.c_str(), 0, depth_color);
+        if (surface) {
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+            if (texture) {
+                SDL_FRect dest = {
+                    static_cast<float>(ui_layout.top_bar.x + 650),
+                    static_cast<float>(ui_layout.top_bar.y + 25),
+                    static_cast<float>(surface->w),
+                    static_cast<float>(surface->h)
+                };
+                SDL_RenderTexture(renderer, texture, nullptr, &dest);
+                SDL_DestroyTexture(texture);
+            }
+            SDL_DestroySurface(surface);
         }
 
 
