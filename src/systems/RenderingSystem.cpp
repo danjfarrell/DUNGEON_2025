@@ -47,7 +47,20 @@ void RenderSystem::update(ComponentManager& components, float dt) {
         Position* pos = positions->get(entity);
 
         if (pos) {
+            //to_render.push_back({ *pos, rend_data[i] });
+            // ========================================
+            // NEW: Only render if tile is visible or player
+            // ========================================
+            bool is_player = components.has_component<PlayerControlled>(entity);
+
+            if (tile_visibility && !is_player) {
+                if (!tile_visibility->is_visible(pos->x, pos->y)) {
+                    continue;  // Skip rendering this entity
+                }
+            }
+
             to_render.push_back({ *pos, rend_data[i] });
+
         }
     }
 

@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
     auto* map_render_system = world.add_system<MapRenderSystem>(
         &sprite_manager, &game_map, 2, &camera, &ui_layout, tile_vis);  // Pass camera
     auto* render_system = world.add_system<RenderSystem>(
-        &sprite_manager, 2, &camera, &ui_layout);  // Pass camera
+        &sprite_manager, 2, &camera, &ui_layout, tile_vis);  // Pass camera
 
     // Create minimap
     Minimap minimap(
@@ -548,6 +548,14 @@ int main(int argc, char* argv[]) {
 
                         // NEW: Advance turn and occasionally add flavor text
                         message_log.next_turn();
+
+                        // ========================================
+                        // NEW: Update FOV after player moves!
+                        // ========================================
+                        if (tile_vis) {
+                            tile_vis->update_fov(new_x, new_y, 10);  // 10 tile vision radius
+                        }
+
 
                         // Random flavor messages (10% chance)
                         if (rand() % 10 == 0) {
