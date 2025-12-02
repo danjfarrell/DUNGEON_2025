@@ -321,7 +321,7 @@ int main(int argc, char* argv[]) {
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
-    game_map.dump_with_sprites_to_log(
+    game_map->dump_with_sprites_to_log(
         [map_render_system](int x, int y, TileType tile) {
             return map_render_system->get_sprite_name_for_tile(x, y, tile);
         },
@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
         30   // height
     );
 
-    game_map.dump_sprite_grid_to_log(
+    game_map->dump_sprite_grid_to_log(
         [map_render_system](int x, int y, TileType tile) {
             return map_render_system->get_sprite_name_for_tile(x, y, tile);
         },
@@ -544,8 +544,8 @@ int main(int argc, char* argv[]) {
                     if (!tried_to_move) continue;
 
                     // Before moving, check map
-                    if (!game_map.is_walkable(new_x, new_y)) {
-                        TileType tile = game_map.get_tile(new_x, new_y);
+                    if (!game_map->is_walkable(new_x, new_y)) {
+                        TileType tile = game_map->get_tile(new_x, new_y);
                         if (tile == TileType::WALL) {
                             message_log.add_info("You bump into a wall.");
                         }

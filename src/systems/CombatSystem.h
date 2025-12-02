@@ -7,8 +7,12 @@
 #include "../ui/MessageLog.h"
 #include "../graphics/SpriteManager.h"
 #include "../data/EnemyData.h"
+#include "ExperienceSystem.h"  // ADD THIS
 #include <algorithm>
 #include <random>
+
+
+
 
 class CombatSystem : public System {
 private:
@@ -16,7 +20,7 @@ private:
     World* world;  // NEW: Need world to spawn items
     SpriteManager* sprite_manager;  // NEW: For item sprites
     EnemyDataManager* enemy_data;  // NEW!
-    class ExperienceSystem* xp_system;
+    ExperienceSystem* xp_system;  // Now this is recognized
     std::mt19937 rng;  // NEW: For random gold amounts
 
 public:
