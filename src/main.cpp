@@ -659,8 +659,88 @@ int main(int argc, char* argv[]) {
 
 
         // Level transitions
+        //if (stair_system->was_triggered()) {
+        //    int new_depth = dungeon_manager.get_current_depth();
+        //    if (stair_system->is_descending()) {
+        //        new_depth++;
+        //        message_log.add_success("You descend deeper...");
+        //    }
+        //    else {
+        //        new_depth--;
+        //        if (new_depth < 1) new_depth = 1;
+        //        message_log.add_info("You ascend...");
+        //    }
+
+        //    // Clear entities
+        //    auto* all_entities = world.get_component_manager().get_array<Position>();
+        //    if (all_entities) {
+        //        auto& entities = all_entities->get_entities();
+        //        std::vector<Entity> to_remove;
+
+        //        for (Entity e : entities) {
+        //            if (!world.has_component<PlayerControlled>(e)) {
+        //                to_remove.push_back(e);
+        //            }
+        //        }
+
+        //        for (Entity e : to_remove) {
+        //            if (world.has_component<Position>(e)) world.get_component_manager().remove_component<Position>(e);
+        //            if (world.has_component<Renderable>(e)) world.get_component_manager().remove_component<Renderable>(e);
+        //            if (world.has_component<SpriteBase>(e)) world.get_component_manager().remove_component<SpriteBase>(e);
+        //            if (world.has_component<AI>(e)) world.get_component_manager().remove_component<AI>(e);
+        //            if (world.has_component<BlocksMovement>(e)) world.get_component_manager().remove_component<BlocksMovement>(e);
+        //            if (world.has_component<CombatStats>(e)) world.get_component_manager().remove_component<CombatStats>(e);
+        //            if (world.has_component<Energy>(e)) world.get_component_manager().remove_component<Energy>(e);
+        //            if (world.has_component<EnemyType>(e)) world.get_component_manager().remove_component<EnemyType>(e);
+        //            if (world.has_component<Name>(e)) world.get_component_manager().remove_component<Name>(e);
+        //        }
+        //    }
+
+        //    game_map = dungeon_manager.generate_level(new_depth);
+        //    stair_system->set_map(game_map);
+        //    map_render_system->set_map(game_map);
+
+        //    world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
+        //    tile_vis = world.get_tile_visibility();
+        //    map_render_system->set_tile_visibility(tile_vis);
+        //    render_system->set_tile_visibility(tile_vis);
+
+        //    camera = Camera(ui_layout.game_viewport.w, ui_layout.game_viewport.h,
+        //        game_map->get_width(), game_map->get_height(), TILE_SIZE);
+        //    map_render_system->set_camera(&camera);
+        //    render_system->set_camera(&camera);
+
+        //    // Instead of recreating, just update:
+        //    minimap.set_map(game_map);
+        //    minimap.reveal_all();
+        //    minimap.center_on(spawn_pos.x, spawn_pos.y);
+
+
+
+        //    Position spawn_pos = dungeon_manager.get_player_spawn_position();
+        //    Position* player_pos = world.get_component<Position>(player);
+        //    if (player_pos) {
+        //        player_pos->x = spawn_pos.x;
+        //        player_pos->y = spawn_pos.y;
+        //    }
+
+        //    camera.center_on(spawn_pos.x, spawn_pos.y);
+        //    tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
+
+        //    dungeon_manager.spawn_enemies(enemy_spawner, world);
+        //    message_log.add_info("Dungeon Level " + std::to_string(new_depth));
+        //}
+        // Level transitions
         if (stair_system->was_triggered()) {
             int new_depth = dungeon_manager.get_current_depth();
+            Position* player_pos = world.get_component<Position>(player);
+
+            if (!player_pos) continue;  // Safety check
+
+            // Save current position (where stairs are)
+            int stairs_x = player_pos->x;
+            int stairs_y = player_pos->y;
+
             if (stair_system->is_descending()) {
                 new_depth++;
                 message_log.add_success("You descend deeper...");
@@ -671,32 +751,35 @@ int main(int argc, char* argv[]) {
                 message_log.add_info("You ascend...");
             }
 
-            // Clear entities
-            auto* all_entities = world.get_component_manager().get_array<Position>();
-            if (all_entities) {
-                auto& entities = all_entities->get_entities();
-                std::vector<Entity> to_remove;
+            // ========================================
+            // DON'T CLEAR ENTITIES IF LEVEL IS CACHED
+            // ========================================
+            bool is_new_level = !dungeon_manager.has_level(new_depth);  // Need to add this method
 
-                for (Entity e : entities) {
-                    if (!world.has_component<PlayerControlled>(e)) {
-                        to_remove.push_back(e);
+            if (is_new_level) {
+                // Clear entities only for NEW levels
+                auto* all_entities = world.get_component_manager().get_array<Position>();
+                if (all_entities) {
+                    auto& entities = all_entities->get_entities();
+                    std::vector<Entity> to_remove;
+
+                    for (Entity e : entities) {
+                        if (!world.has_component<PlayerControlled>(e)) {
+                            to_remove.push_back(e);
+                        }
                     }
-                }
 
-                for (Entity e : to_remove) {
-                    if (world.has_component<Position>(e)) world.get_component_manager().remove_component<Position>(e);
-                    if (world.has_component<Renderable>(e)) world.get_component_manager().remove_component<Renderable>(e);
-                    if (world.has_component<SpriteBase>(e)) world.get_component_manager().remove_component<SpriteBase>(e);
-                    if (world.has_component<AI>(e)) world.get_component_manager().remove_component<AI>(e);
-                    if (world.has_component<BlocksMovement>(e)) world.get_component_manager().remove_component<BlocksMovement>(e);
-                    if (world.has_component<CombatStats>(e)) world.get_component_manager().remove_component<CombatStats>(e);
-                    if (world.has_component<Energy>(e)) world.get_component_manager().remove_component<Energy>(e);
-                    if (world.has_component<EnemyType>(e)) world.get_component_manager().remove_component<EnemyType>(e);
-                    if (world.has_component<Name>(e)) world.get_component_manager().remove_component<Name>(e);
+                    for (Entity e : to_remove) {
+                        // ... component removal code ...
+                    }
                 }
             }
 
-            game_map = dungeon_manager.generate_level(new_depth);
+            // Generate or retrieve level
+            Position spawn_pos;
+            game_map = dungeon_manager.generate_level(new_depth, &spawn_pos);
+
+            // Update systems
             stair_system->set_map(game_map);
             map_render_system->set_map(game_map);
 
@@ -710,27 +793,24 @@ int main(int argc, char* argv[]) {
             map_render_system->set_camera(&camera);
             render_system->set_camera(&camera);
 
-            // Instead of recreating, just update:
             minimap.set_map(game_map);
             minimap.reveal_all();
-            minimap.center_on(spawn_pos.x, spawn_pos.y);
 
-
-
-            Position spawn_pos = dungeon_manager.get_player_spawn_position();
-            Position* player_pos = world.get_component<Position>(player);
-            if (player_pos) {
-                player_pos->x = spawn_pos.x;
-                player_pos->y = spawn_pos.y;
-            }
+            // Move player to spawn position (returned by generate_level)
+            player_pos->x = spawn_pos.x;
+            player_pos->y = spawn_pos.y;
 
             camera.center_on(spawn_pos.x, spawn_pos.y);
             tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
+            minimap.center_on(spawn_pos.x, spawn_pos.y);
 
-            dungeon_manager.spawn_enemies(enemy_spawner, world);
+            // Spawn enemies only for new levels
+            if (is_new_level) {
+                dungeon_manager.spawn_enemies(enemy_spawner, world);
+            }
+
             message_log.add_info("Dungeon Level " + std::to_string(new_depth));
         }
-
 
 
 
