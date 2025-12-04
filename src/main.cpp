@@ -738,8 +738,10 @@ int main(int argc, char* argv[]) {
             if (!player_pos) continue;  // Safety check
 
             // Save current position (where stairs are)
-            int stairs_x = player_pos->x;
-            int stairs_y = player_pos->y;
+            //int stairs_x = player_pos->x;
+            //int stairs_y = player_pos->y;
+
+            bool descending = stair_system->is_descending();  // CAPTURE THIS
 
             if (stair_system->is_descending()) {
                 new_depth++;
@@ -770,14 +772,22 @@ int main(int argc, char* argv[]) {
                     }
 
                     for (Entity e : to_remove) {
-                        // ... component removal code ...
+                        if (world.has_component<Position>(e)) world.get_component_manager().remove_component<Position>(e);
+                        if (world.has_component<Renderable>(e)) world.get_component_manager().remove_component<Renderable>(e);
+                        if (world.has_component<SpriteBase>(e)) world.get_component_manager().remove_component<SpriteBase>(e);
+                        if (world.has_component<AI>(e)) world.get_component_manager().remove_component<AI>(e);
+                        if (world.has_component<BlocksMovement>(e)) world.get_component_manager().remove_component<BlocksMovement>(e);
+                        if (world.has_component<CombatStats>(e)) world.get_component_manager().remove_component<CombatStats>(e);
+                        if (world.has_component<Energy>(e)) world.get_component_manager().remove_component<Energy>(e);
+                        if (world.has_component<EnemyType>(e)) world.get_component_manager().remove_component<EnemyType>(e);
+                        if (world.has_component<Name>(e)) world.get_component_manager().remove_component<Name>(e);
                     }
                 }
             }
 
             // Generate or retrieve level
             Position spawn_pos;
-            game_map = dungeon_manager.generate_level(new_depth, &spawn_pos);
+            game_map = dungeon_manager.generate_level(new_depth, &spawn_pos, descending);
 
             // Update systems
             stair_system->set_map(game_map);

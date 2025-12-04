@@ -3,7 +3,7 @@
 
 #include "Map.h"
 #include "MapGenerators.h"
-#include "LevelCache.h"  // ADD THIS
+#include "LevelCache.h"
 #include "../ecs/World.h"
 #include "../components/Components.h"
 #include "../spawning/EnemySpawner.h"
@@ -14,8 +14,8 @@
 class DungeonManager {
 private:
     int current_depth;
-    Map* current_map;  // Raw pointer to current level
-    LevelCache level_cache;  // ADD THIS
+    Map* current_map;
+    LevelCache level_cache;
     std::mt19937 rng;
     int base_map_width;
     int base_map_height;
@@ -33,8 +33,10 @@ public:
         return level_cache.has_level(depth);
     }
 
-    // Generate or retrieve level
-    Map* generate_level(int depth, Position* player_exit_pos = nullptr) {
+    // ========================================
+    // UPDATED: Now accepts direction parameter
+    // ========================================
+    Map* generate_level(int depth, Position* player_exit_pos = nullptr, bool descending = true) {
         current_depth = depth;
 
         // Check if level is cached
@@ -42,10 +44,18 @@ public:
         if (cached) {
             current_map = cached->map.get();
 
-            // Update player_exit_pos if provided
+            // Spawn at correct stairs based on direction
             if (player_exit_pos) {
-                player_exit_pos->x = cached->entrance_x;
-                player_exit_pos->y = cached->entrance_y;
+                if (descending) {
+                    // Coming down from above -> spawn at up-stairs
+                    player_exit_pos->x = cached->up_stairs_x;
+                    player_exit_pos->y = cached->up_stairs_y;
+                }
+                else {
+                    // Coming up from below -> spawn at down-stairs
+                    player_exit_pos->x = cached->down_stairs_x;
+                    player_exit_pos->y = cached->down_stairs_y;
+                }
             }
 
             return current_map;
@@ -65,40 +75,58 @@ public:
 
         place_stairs(*new_map, depth);
 
-        // Find entrance position (where stairs are)
-        int entrance_x = 5;
-        int entrance_y = 5;
+        // Find BOTH stair positions
+        int up_stairs_x = -1;
+        int up_stairs_y = -1;
+        int down_stairs_x = -1;
+        int down_stairs_y = -1;
 
-        if (depth > 1) {
-            // Find up-stairs position
-            for (int y = 0; y < new_map->get_height(); y++) {
-                for (int x = 0; x < new_map->get_width(); x++) {
-                    if (new_map->get_tile(x, y) == TileType::STAIRS_UP) {
-                        entrance_x = x;
-                        entrance_y = y;
-                        break;
-                    }
+        // Search for stairs
+        for (int y = 0; y < new_map->get_height(); y++) {
+            for (int x = 0; x < new_map->get_width(); x++) {
+                TileType tile = new_map->get_tile(x, y);
+
+                if (tile == TileType::STAIRS_UP) {
+                    up_stairs_x = x;
+                    up_stairs_y = y;
+                }
+                else if (tile == TileType::STAIRS_DOWN) {
+                    down_stairs_x = x;
+                    down_stairs_y = y;
                 }
             }
         }
-        else {
-            // First level, use first room center
-            if (!new_map->get_rooms().empty()) {
-                const Room& first_room = new_map->get_rooms()[0];
-                entrance_x = first_room.center_x();
-                entrance_y = first_room.center_y();
-            }
+
+        // Fallback: use first room center if no stairs found
+        if (up_stairs_x == -1 && !new_map->get_rooms().empty()) {
+            const Room& first_room = new_map->get_rooms()[0];
+            up_stairs_x = first_room.center_x();
+            up_stairs_y = first_room.center_y();
+        }
+
+        if (down_stairs_x == -1 && !new_map->get_rooms().empty()) {
+            const Room& last_room = new_map->get_rooms().back();
+            down_stairs_x = last_room.center_x();
+            down_stairs_y = last_room.center_y();
         }
 
         current_map = new_map.get();
 
-        // Cache the level
-        level_cache.cache_level(depth, std::move(new_map), entrance_x, entrance_y);
+        // Cache with BOTH positions
+        level_cache.cache_level(depth, std::move(new_map),
+            up_stairs_x, up_stairs_y,
+            down_stairs_x, down_stairs_y);
 
-        // Update player position if provided
+        // Set player spawn based on direction
         if (player_exit_pos) {
-            player_exit_pos->x = entrance_x;
-            player_exit_pos->y = entrance_y;
+            if (descending) {
+                player_exit_pos->x = up_stairs_x;
+                player_exit_pos->y = up_stairs_y;
+            }
+            else {
+                player_exit_pos->x = down_stairs_x;
+                player_exit_pos->y = down_stairs_y;
+            }
         }
 
         return current_map;
@@ -112,13 +140,21 @@ public:
         return current_depth;
     }
 
-    Position get_player_spawn_position() {
+    // ========================================
+    // UPDATED: Get spawn position based on direction
+    // ========================================
+    Position get_player_spawn_position(bool descending = true) {
         LevelData* cached = level_cache.get_level(current_depth);
         if (cached) {
-            return Position{ cached->entrance_x, cached->entrance_y };
+            if (descending) {
+                return Position{ cached->up_stairs_x, cached->up_stairs_y };
+            }
+            else {
+                return Position{ cached->down_stairs_x, cached->down_stairs_y };
+            }
         }
 
-        // Fallback if not cached
+        // Fallback
         if (current_map && !current_map->get_rooms().empty()) {
             const Room& first_room = current_map->get_rooms()[0];
             return Position{ first_room.center_x(), first_room.center_y() };
@@ -128,9 +164,9 @@ public:
     }
 
     void spawn_enemies(EnemySpawner& spawner, World& world) {
-        // Only spawn if this is a newly generated level
-        if (!level_cache.has_level(current_depth)) {
-            return;  // Level was cached, enemies already exist
+        LevelData* cached = level_cache.get_level(current_depth);
+        if (cached) {
+            return;
         }
 
         const auto& rooms = current_map->get_rooms();
@@ -173,12 +209,14 @@ private:
         const auto& rooms = map.get_rooms();
         if (rooms.empty()) return;
 
+        // Always place up-stairs (even on depth 1 for consistency)
+        const Room& first_room = rooms[0];
         if (depth > 1) {
-            const Room& first_room = rooms[0];
             map.set_tile(first_room.center_x(), first_room.center_y(),
                 TileType::STAIRS_UP);
         }
 
+        // Always place down-stairs
         const Room& last_room = rooms[rooms.size() - 1];
         map.set_tile(last_room.center_x(), last_room.center_y(),
             TileType::STAIRS_DOWN);

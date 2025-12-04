@@ -7,11 +7,15 @@
 
 struct LevelData {
     std::unique_ptr<Map> map;
-    int entrance_x;  // Where player entered from
-    int entrance_y;
+    int up_stairs_x;    // CHANGED: Where up-stairs are (spawn here when descending)
+    int up_stairs_y;
+    int down_stairs_x;  // NEW: Where down-stairs are (spawn here when ascending)
+    int down_stairs_y;
 
-    LevelData(std::unique_ptr<Map> m, int x, int y)
-        : map(std::move(m)), entrance_x(x), entrance_y(y) {
+    LevelData(std::unique_ptr<Map> m, int ux, int uy, int dx, int dy)
+        : map(std::move(m)),
+        up_stairs_x(ux), up_stairs_y(uy),
+        down_stairs_x(dx), down_stairs_y(dy) {
     }
 };
 
@@ -23,21 +27,21 @@ private:
 public:
     LevelCache(int max_cache = 20) : max_cached_levels(max_cache) {}
 
-    // Store a level
-    void cache_level(int depth, std::unique_ptr<Map> map, int entrance_x, int entrance_y) {
-        // Evict oldest if cache full
+    // Store a level with BOTH stair positions
+    void cache_level(int depth, std::unique_ptr<Map> map,
+        int up_stairs_x, int up_stairs_y,
+        int down_stairs_x, int down_stairs_y) {
         if (cached_levels.size() >= max_cached_levels) {
-            // Simple eviction: remove furthest from current depth
-            // (You could make this smarter - LRU, etc.)
-            cached_levels.clear();  // For now, just clear all
+            cached_levels.clear();
         }
 
         cached_levels[depth] = std::make_unique<LevelData>(
-            std::move(map), entrance_x, entrance_y
+            std::move(map),
+            up_stairs_x, up_stairs_y,
+            down_stairs_x, down_stairs_y
         );
     }
 
-    // Retrieve a level (returns nullptr if not cached)
     LevelData* get_level(int depth) {
         auto it = cached_levels.find(depth);
         if (it != cached_levels.end()) {
@@ -46,17 +50,14 @@ public:
         return nullptr;
     }
 
-    // Check if level is cached
     bool has_level(int depth) const {
         return cached_levels.find(depth) != cached_levels.end();
     }
 
-    // Remove a level from cache
     void evict_level(int depth) {
         cached_levels.erase(depth);
     }
 
-    // Clear all cached levels
     void clear() {
         cached_levels.clear();
     }
