@@ -295,14 +295,14 @@ int main(int argc, char* argv[]) {
     EnemySpawner enemy_spawner(&world, &sprite_manager, &enemy_data);
 
     // Add systems to world
-    world.add_system<AISystem>(&game_map, combat_system);  // NEW!
+    world.add_system<AISystem>(game_map, combat_system);  // NEW!
     world.add_system<ItemPickupSystem>(&message_log);  // NEW! Runs every frame
     world.add_system<DeathSystem>();  // NEW!
     auto* stair_system = world.add_system<StairSystem>(game_map, &dungeon_manager, &message_log);
 
     world.add_system<SpriteUpdateSystem>(&sprite_manager);
     auto* map_render_system = world.add_system<MapRenderSystem>(
-        &sprite_manager, &game_map, 2, &camera, &ui_layout, tile_vis);  // Pass camera
+        &sprite_manager, game_map, 2, &camera, &ui_layout, tile_vis);  // Pass camera
     auto* render_system = world.add_system<RenderSystem>(
         &sprite_manager, 2, &camera, &ui_layout, tile_vis);  // Pass camera
 
@@ -372,7 +372,8 @@ int main(int argc, char* argv[]) {
    
     camera.center_on(spawn_pos.x, spawn_pos.y);
     tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
-
+    // ADD THIS:
+    minimap.center_on(spawn_pos.x, spawn_pos.y);
     // NEW: Welcome message
     message_log.add_success("Welcome to the dungeon!");
     message_log.add_info("Use arrow keys to move. Press ESC to quit.");

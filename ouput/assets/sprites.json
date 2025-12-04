@@ -231,7 +231,7 @@
     "wall.end.south": {
       "sheet_id": 3,
       "tile_x": 1,
-      "tile_y": 1,
+      "tile_y": 2,
       "layer": 1
     },
     "wall.end.east": {
@@ -257,6 +257,18 @@
       "sheet_id": 3,
       "tile_x": 6,
       "tile_y": 5,
+      "layer": 1
+    },
+    "stairs.down": {
+      "sheet_id": 3,
+      "tile_x": 1,
+      "tile_y": 9,
+      "layer": 1
+    },
+    "stairs.up": {
+      "sheet_id": 3,
+      "tile_x": 2,
+      "tile_y": 9,
       "layer": 1
     }
   }
