@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Map.h"
+#include "TileVisibility.h"  // ADD THIS
 #include <memory>
 #include <unordered_map>
 
@@ -11,12 +12,15 @@ struct LevelData {
     int up_stairs_y;
     int down_stairs_x;  // NEW: Where down-stairs are (spawn here when ascending)
     int down_stairs_y;
+    std::unique_ptr<TileVisibility> exploration;  // NEW: Save exploration state
+
 
     LevelData(std::unique_ptr<Map> m, int ux, int uy, int dx, int dy)
         : map(std::move(m)),
         up_stairs_x(ux), up_stairs_y(uy),
-        down_stairs_x(dx), down_stairs_y(dy) {
-    }
+        down_stairs_x(dx), down_stairs_y(dy), 
+        exploration(nullptr) {}  // Initialize as null
+    
 };
 
 class LevelCache {

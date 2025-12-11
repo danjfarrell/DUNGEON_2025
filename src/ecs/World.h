@@ -28,6 +28,19 @@ public:
     void initialize_tile_visibility(int width, int height);
 
 
+    // ========================================
+    // NEW: Save and restore exploration state
+    // ========================================
+    std::unique_ptr<TileVisibility> take_tile_visibility() {
+        return std::move(tile_visibility);
+    }
+
+    void set_tile_visibility(std::unique_ptr<TileVisibility> vis) {
+        tile_visibility = std::move(vis);
+    }
+
+
+
     // Entity management
     Entity create_entity();
     void destroy_entity(Entity entity);

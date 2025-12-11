@@ -268,7 +268,7 @@ int main(int argc, char* argv[]) {
     TileVisibility* tile_vis = world.get_tile_visibility();
 
     // Option 1: Reveal all for testing (comment out for real fog of war)
-    tile_vis->reveal_all();
+    //tile_vis->reveal_all();
 
     // Option 2: Start with everything unexplored (uncomment for real fog)
     // tile_vis will start unexplored by default
@@ -317,7 +317,7 @@ int main(int argc, char* argv[]) {
         ui_layout.minimap.h
     );
     // Temporary: reveal all tiles (remove this once FOV is implemented)
-    minimap.reveal_all();
+    //minimap.reveal_all();
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
@@ -629,6 +629,7 @@ int main(int argc, char* argv[]) {
                         // ========================================
                         if (tile_vis) {
                             tile_vis->update_fov(new_x, new_y, 10);  // 10 tile vision radius
+                            minimap.update_from_fov(tile_vis);  // NEW: Sync minimap with FOV
                         }
 
 
@@ -732,6 +733,7 @@ int main(int argc, char* argv[]) {
         //}
         // Level transitions
         if (stair_system->was_triggered()) {
+            int old_depth = dungeon_manager.get_current_depth();  // NEW: Save current depth
             int new_depth = dungeon_manager.get_current_depth();
             Position* player_pos = world.get_component<Position>(player);
 
@@ -752,6 +754,14 @@ int main(int argc, char* argv[]) {
                 if (new_depth < 1) new_depth = 1;
                 message_log.add_info("You ascend...");
             }
+
+
+            // ========================================
+            // NEW: Save current level's exploration before leaving
+            // ========================================
+            auto old_exploration = world.take_tile_visibility();
+            dungeon_manager.save_exploration(old_depth, std::move(old_exploration));
+
 
             // ========================================
             // DON'T CLEAR ENTITIES IF LEVEL IS CACHED
@@ -793,7 +803,23 @@ int main(int argc, char* argv[]) {
             stair_system->set_map(game_map);
             map_render_system->set_map(game_map);
 
-            world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
+
+            // ========================================
+            // NEW: Restore exploration or create fresh
+            // ========================================
+            auto restored_exploration = dungeon_manager.get_exploration(new_depth);
+            if (restored_exploration) {
+                // Level was visited before - restore saved exploration
+                world.set_tile_visibility(std::move(restored_exploration));
+            }
+            else {
+                // New level - create fresh exploration (all unexplored)
+                world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
+            }
+
+
+
+            //world.initialize_tile_visibility(game_map->get_width(), game_map->get_height());
             tile_vis = world.get_tile_visibility();
             map_render_system->set_tile_visibility(tile_vis);
             render_system->set_tile_visibility(tile_vis);
@@ -804,7 +830,7 @@ int main(int argc, char* argv[]) {
             render_system->set_camera(&camera);
 
             minimap.set_map(game_map);
-            minimap.reveal_all();
+            //minimap.reveal_all();
 
             // Move player to spawn position (returned by generate_level)
             player_pos->x = spawn_pos.x;
@@ -813,6 +839,7 @@ int main(int argc, char* argv[]) {
             camera.center_on(spawn_pos.x, spawn_pos.y);
             tile_vis->update_fov(spawn_pos.x, spawn_pos.y, 10);
             minimap.center_on(spawn_pos.x, spawn_pos.y);
+            minimap.update_from_fov(tile_vis);  // ADD THIS LINE
 
             // Spawn enemies only for new levels
             if (is_new_level) {

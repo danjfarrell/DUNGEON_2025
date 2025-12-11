@@ -192,6 +192,31 @@ public:
         }
     }
 
+    // ========================================
+    // NEW: Save exploration state for current level
+    // ========================================
+    void save_exploration(int depth, std::unique_ptr<TileVisibility> exploration) {
+        LevelData* level = level_cache.get_level(depth);
+        if (level) {
+            level->exploration = std::move(exploration);
+        }
+    }
+
+    // ========================================
+    // NEW: Get saved exploration state
+    // ========================================
+    std::unique_ptr<TileVisibility> get_exploration(int depth) {
+        LevelData* level = level_cache.get_level(depth);
+        if (level && level->exploration) {
+            // Move it out (caller takes ownership)
+            return std::move(level->exploration);
+        }
+        return nullptr;
+    }
+
+
+
+
 private:
     std::unique_ptr<MapGenerator> choose_generator(int depth) {
         if (depth % 3 == 1) {

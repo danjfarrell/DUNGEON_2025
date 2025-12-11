@@ -279,4 +279,32 @@ public:
 
     bool get_show_fog() const { return show_fog; }
     bool get_show_entities() const { return show_entities; }
+
+    // ========================================
+    // NEW: Update visibility from TileVisibility system
+    // ========================================
+    void update_from_fov(TileVisibility* tile_vis) {
+        if (!tile_vis) return;
+
+        for (int y = 0; y < game_map->get_height(); y++) {
+            for (int x = 0; x < game_map->get_width(); x++) {
+                // Sync minimap state with TileVisibility
+                if (tile_vis->is_visible(x, y)) {
+                    visible[y][x] = true;
+                    explored[y][x] = true;
+                }
+                else if (tile_vis->is_explored(x, y)) {
+                    visible[y][x] = false;
+                    explored[y][x] = true;
+                }
+                else {
+                    visible[y][x] = false;
+                    explored[y][x] = false;
+                }
+            }
+        }
+    }
+
+
+
 };
