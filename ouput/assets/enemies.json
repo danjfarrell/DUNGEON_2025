@@ -19,9 +19,14 @@
         },
         "items": [
           {
-            "item_type": "potion_health",
+            "item_type": "health_potion",
             "quantity": 1,
             "chance": 0.2
+          },
+          {
+            "item_type": "mana_potion",
+            "quantity": 1,
+            "chance": 0.15
           }
         ]
       }
@@ -45,14 +50,19 @@
         },
         "items": [
           {
-            "item_type": "potion_health",
+            "item_type": "health_potion",
             "quantity": 1,
             "chance": 0.3
           },
           {
-            "item_type": "sword_iron",
+            "item_type": "mana_potion",
             "quantity": 1,
-            "chance": 0.1
+            "chance": 0.15
+          },
+          {
+            "item_type": "greater_health_potion",
+            "quantity": 1,
+            "chance": 0.10
           }
         ]
       }

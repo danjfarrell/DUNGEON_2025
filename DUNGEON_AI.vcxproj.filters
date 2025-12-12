@@ -170,6 +170,12 @@
     <ClInclude Include="src\world\LevelCache.h">
       <Filter>Header Files\world</Filter>
     </ClInclude>
+    <ClInclude Include="src\systems\ConsumableSystem.h">
+      <Filter>Header Files\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\InventoryUI.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">

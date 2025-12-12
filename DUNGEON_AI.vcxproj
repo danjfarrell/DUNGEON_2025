@@ -156,6 +156,7 @@
     <ClInclude Include="src\systems\AISystem.h" />
     <ClInclude Include="src\systems\Camera.h" />
     <ClInclude Include="src\systems\CombatSystem.h" />
+    <ClInclude Include="src\systems\ConsumableSystem.h" />
     <ClInclude Include="src\systems\DeathSystem.h" />
     <ClInclude Include="src\systems\ExperienceSystem.h" />
     <ClInclude Include="src\systems\ItemPickupSystem.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src\systems\StairSystem.h" />
     <ClInclude Include="src\systems\TurnManager.h" />
     <ClInclude Include="src\ui\Healthbar.h" />
+    <ClInclude Include="src\ui\InventoryUI.h" />
     <ClInclude Include="src\ui\Messagelog.h" />
     <ClInclude Include="src\ui\Minimap.h" />
     <ClInclude Include="src\ui\UILayout.h" />

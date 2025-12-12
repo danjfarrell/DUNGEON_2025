@@ -17,17 +17,22 @@
 #include "systems/MagicSystem.h"
 #include "systems/ExperienceSystem.h"
 #include "systems/StairSystem.h"
+#include "systems/ConsumableSystem.h"
 
 #include "graphics/SpriteManager.h"
+
 #include "world/Map.h"
 #include "world/MapGenerators.h"
 #include "world/DungeonManager.h"
+#include "world/TileVisibility.h"  // ADD THIS INCLUD
+
 
 #include "utils/Logger.h"
 #include "ui/MessageLog.h" 
 #include "ui/UILayout.h"  // NEW
 #include "ui/Minimap.h"
-#include "world/TileVisibility.h"  // ADD THIS INCLUD
+#include "ui/InventoryUI.h"
+
 #include "ui/HealthBar.h"
 
 #include "data/EnemyData.h"
@@ -291,6 +296,10 @@ int main(int argc, char* argv[]) {
     auto* combat_system = world.add_system<CombatSystem>(&message_log, &world, &sprite_manager, &enemy_data, xp_system);
     auto* magic_system = world.add_system<MagicSystem>(&message_log, game_map);
 
+    // 2. CREATE SYSTEMS (after creating other systems)
+// -------------------------------------------------
+    auto* consumable_system = world.add_system<ConsumableSystem>(&message_log);
+
     // Create enemy spawner
     EnemySpawner enemy_spawner(&world, &sprite_manager, &enemy_data);
 
@@ -318,6 +327,19 @@ int main(int argc, char* argv[]) {
     );
     // Temporary: reveal all tiles (remove this once FOV is implemented)
     //minimap.reveal_all();
+
+    // 3. CREATE INVENTORY UI (after creating other UI elements)
+// ----------------------------------------------------------
+    InventoryUI inventory_ui(
+        renderer,
+        message_log.get_font(),
+        &world,
+        ui_layout.hotbar.x,        // Position at hotbar location
+        ui_layout.hotbar.y - 70,   // Just above hotbar
+        50                          // Slot size
+    );
+
+
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
@@ -476,6 +498,33 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
+                // 4. ADD INPUT HANDLING (in event loop, SDL_EVENT_KEY_DOWN section)
+                // ------------------------------------------------------------------
+
+                // Item usage (keys 1-0 for inventory slots)
+                if (event.key.key >= SDLK_1 && event.key.key <= SDLK_9) {
+                    int slot = event.key.key - SDLK_1;  // 0-8
+                    if (consumable_system->use_from_inventory(
+                        world.get_component_manager(), player, slot)) {
+                        // Successfully used item - end player turn
+                        Energy* player_energy = world.get_component<Energy>(player);
+                        if (player_energy) {
+                            player_energy->consume_turn();
+                            turn_manager.end_player_turn();
+                        }
+                    }
+                }
+                else if (event.key.key == SDLK_0) {
+                    // 0 key = 10th slot (index 9)
+                    if (consumable_system->use_from_inventory(
+                        world.get_component_manager(), player, 9)) {
+                        Energy* player_energy = world.get_component<Energy>(player);
+                        if (player_energy) {
+                            player_energy->consume_turn();
+                            turn_manager.end_player_turn();
+                        }
+                    }
+                }
 
 
 
@@ -981,7 +1030,10 @@ int main(int argc, char* argv[]) {
             // You could add a game over state here
         }
 
-
+        // 5. RENDER INVENTORY UI (in render loop, after message_log.render())
+        // --------------------------------------------------------------------
+        inventory_ui.render(player);
+        
         // Top bar border
         SDL_SetRenderDrawColor(renderer, 100, 100, 120, 255);
         SDL_RenderRect(renderer, &top_bar_rect);
