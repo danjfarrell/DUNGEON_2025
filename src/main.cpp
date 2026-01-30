@@ -467,22 +467,57 @@ int main(int argc, char* argv[]) {
                     running = false;
                 }
 
-                // Spell casting
-                if (event.key.key == SDLK_1) {
-                    magic_system->cast_spell(world.get_component_manager(), player, 0);
+                //// Spell casting
+                //if (event.key.key == SDLK_1) {
+                //    magic_system->cast_spell(world.get_component_manager(), player, 0);
+                //}
+                //else if (event.key.key == SDLK_2) {
+                //    magic_system->cast_spell(world.get_component_manager(), player, 1);
+                //}
+                //else if (event.key.key == SDLK_3) {
+                //    magic_system->cast_spell(world.get_component_manager(), player, 2);
+                //}
+                //else if (event.key.key == SDLK_4) {
+                //    magic_system->cast_spell(world.get_component_manager(), player, 3);
+                //}
+                //else if (event.key.key == SDLK_5) {
+                //    magic_system->cast_spell(world.get_component_manager(), player, 4);
+                //}
+                // Spell casting (1-5 for spells)
+                if (event.key.key >= SDLK_1 && event.key.key <= SDLK_5) {
+                    // Check if Shift is held (for spells) or not (for items)
+                    if (SDL_GetModState() & SDL_KMOD_SHIFT) {
+                        // Spell casting
+                        int spell_slot = event.key.key - SDLK_1;
+                        magic_system->cast_spell(world.get_component_manager(),
+                            player, spell_slot);
+                    }
+                    else {
+                        // Item usage
+                        int item_slot = event.key.key - SDLK_1;
+                        if (consumable_system->use_from_inventory(
+                            world.get_component_manager(), player, item_slot)) {
+                            Energy* player_energy = world.get_component<Energy>(player);
+                            if (player_energy) {
+                                player_energy->consume_turn();
+                                turn_manager.end_player_turn();
+                            }
+                        }
+                    }
                 }
-                else if (event.key.key == SDLK_2) {
-                    magic_system->cast_spell(world.get_component_manager(), player, 1);
+                else if (event.key.key == SDLK_0) {
+                    // 0 key = 10th inventory slot
+                    if (consumable_system->use_from_inventory(
+                        world.get_component_manager(), player, 9)) {
+                        Energy* player_energy = world.get_component<Energy>(player);
+                        if (player_energy) {
+                            player_energy->consume_turn();
+                            turn_manager.end_player_turn();
+                        }
+                    }
                 }
-                else if (event.key.key == SDLK_3) {
-                    magic_system->cast_spell(world.get_component_manager(), player, 2);
-                }
-                else if (event.key.key == SDLK_4) {
-                    magic_system->cast_spell(world.get_component_manager(), player, 3);
-                }
-                else if (event.key.key == SDLK_5) {
-                    magic_system->cast_spell(world.get_component_manager(), player, 4);
-                }
+
+
 
                 // Stairs
                 if (event.key.key == SDLK_PERIOD && SDL_GetModState() & SDL_KMOD_SHIFT) {
