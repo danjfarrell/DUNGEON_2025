@@ -220,7 +220,7 @@ private:
         if (equipment) {
             Entity item_entity = equipment->get_equipped(slot);
             if (item_entity != 0) {
-                Name* item_name = world->get_component<n>(item_entity);
+                Name* item_name = world->get_component<Name>(item_entity);
                 if (item_name) {
                     // Item name (abbreviated)
                     std::string abbrev = abbreviate(item_name->name, 8);
@@ -320,7 +320,7 @@ private:
         if (slot_index < static_cast<int>(inventory->items.size())) {
             Entity item_entity = inventory->items[slot_index];
             Item* item = world->get_component<Item>(item_entity);
-            Name* item_name = world->get_component<n>(item_entity);
+            Name* item_name = world->get_component<Name>(item_entity);
             
             if (item && item_name) {
                 // Item name (abbreviated)

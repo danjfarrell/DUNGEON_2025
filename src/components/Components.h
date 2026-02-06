@@ -3,6 +3,9 @@
 #include "../ecs/Entity.h"
 // Include magic components
 #include "MagicComponents.h"
+// Include equipment components
+#include "Equipment.h"
+
 #include <string>
 #include <SDL3/SDL.h>
 

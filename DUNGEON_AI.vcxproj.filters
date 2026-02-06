@@ -182,6 +182,9 @@
     <ClInclude Include="src\ui\UnifiedHotbar.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
+    <ClInclude Include="src\components\Equipment.h">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">

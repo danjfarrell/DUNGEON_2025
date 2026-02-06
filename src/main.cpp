@@ -5,6 +5,8 @@
 #include "ecs/World.h"
 #include "components/Components.h"
 #include "components/MagicComponents.h"
+#include "components/Equipment.h"
+
 #include "systems/RenderSystem.h"
 #include "systems/SpriteUpdateSystem.h"
 #include "systems/Camera.h"
@@ -33,6 +35,7 @@
 #include "ui/Minimap.h"
 //#include "ui/InventoryUI.h"
 #include "ui/UnifiedHotbar.h"
+#include "ui/InventoryPanel.h"
 
 #include "ui/HealthBar.h"
 
@@ -57,7 +60,7 @@ AI::Type parse_ai_type(const std::string& ai_str) {
 
 void render_hp_display(SDL_Renderer* renderer, TTF_Font* font,
     int current_hp, int max_hp, int x, int y) {
-    if (!font) return;
+    if (!font) return; 
 
     std::string hp_text = "HP: " + std::to_string(current_hp) + "/" + std::to_string(max_hp);
 
@@ -353,6 +356,24 @@ int main(int argc, char* argv[]) {
         ui_layout.hotbar.h
     );
 
+    // Full inventory panel (toggleable with 'I' key)
+    TTF_Font* title_font = TTF_OpenFont("assets/fonts/DejaVuSansMono.ttf", 24);
+    if (!title_font) {
+        title_font = TTF_OpenFont("C:/Windows/Fonts/consola.ttf", 24);
+    }
+
+    InventoryPanel inventory_panel(
+        renderer,
+        message_log.get_font(),
+        title_font,
+        &world,
+        200,  // x (centered-ish)
+        50,   // y (from top)
+        880,  // width (large panel)
+        600   // height
+    );
+
+
 
     // DEBUG: Detailed tile-by-tile with sprite names
     LOG_INFO("--- Debug: Tile-by-Tile Sprite Resolution ---");
@@ -394,6 +415,7 @@ int main(int argc, char* argv[]) {
     world.add_component(player, sprite_manager.create_renderable("player.south"));
     world.add_component(player, PlayerControlled{});
     world.add_component(player, BlocksMovement{});
+    world.add_component(player, Equipment{});
     // Add Health component to player (if not already added):
     world.add_component(player, Health{ 100, 100 });  // 100/100 HP
     world.add_component(player, Name{ "Player" });  // NEW!
@@ -477,8 +499,26 @@ int main(int argc, char* argv[]) {
 
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.key == SDLK_ESCAPE) {
+                    // If inventory is open, close it first
+                    if (inventory_panel.is_visible()) {
+                        inventory_panel.hide();
+                        continue;
+                    }
                     running = false;
                 }
+
+                // Toggle inventory
+                if (event.key.key == SDLK_I) {
+                    inventory_panel.toggle();
+                    continue;  // Don't process other input when toggling
+                }
+
+                // If inventory is open, skip game input
+                if (inventory_panel.is_visible()) {
+                    // TODO: Add inventory navigation with arrow keys
+                    continue;
+                }
+
 
                 //// Spell casting
                 //if (event.key.key == SDLK_1) {
@@ -634,7 +674,8 @@ int main(int argc, char* argv[]) {
                 //}
 
                 // Only allow player input during player turn
-                if (!turn_manager.is_player_turn()) {
+                // Only allow player movement during player turn and when inventory closed
+                if (!turn_manager.is_player_turn() || inventory_panel.is_visible()) {
                     continue;
                 }
 
@@ -1128,6 +1169,8 @@ int main(int argc, char* argv[]) {
         // ADD THIS INSTEAD:
         unified_hotbar.render(player);
 
+        // Render inventory panel (if open)
+        inventory_panel.render(player);
         // Top bar border
         SDL_SetRenderDrawColor(renderer, 100, 100, 120, 255);
         SDL_RenderRect(renderer, &top_bar_rect);
@@ -1151,7 +1194,13 @@ int main(int argc, char* argv[]) {
 
         // Render game world (systems already add viewport offset)
         // Render game world (only during player turn to avoid flickering)
-        if (turn_manager.is_player_turn()) {
+        //if (turn_manager.is_player_turn()) {
+        //    world.update(0.016f);
+        //}
+
+
+        // Render game world (only if inventory is closed)
+        if (turn_manager.is_player_turn() && !inventory_panel.is_visible()) {
             world.update(0.016f);
         }
 
@@ -1196,6 +1245,11 @@ int main(int argc, char* argv[]) {
         TTF_CloseFont(ui_font);
     }
 
+    // 7. CLEANUP (at end of main)
+    // ----------------------------
+    if (title_font) {
+        TTF_CloseFont(title_font);
+    }
     // Cleanup
     delete combat_system;
     SDL_DestroyRenderer(renderer);

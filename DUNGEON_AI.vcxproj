@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\components\Components.h" />
+    <ClInclude Include="src\components\Equipment.h" />
     <ClInclude Include="src\components\MagicComponents.h" />
     <ClInclude Include="src\data\EnemyData.h" />
     <ClInclude Include="src\ecs\ComponentArray.h" />
