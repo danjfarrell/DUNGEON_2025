@@ -1,0 +1,37 @@
+{
+  "display": {
+    "screen_width": 1280,
+    "screen_height": 720,
+    "tile_size": 16,
+    "tile_scale": 2,
+    "fullscreen": false,
+    "vsync": true
+  },
+  "assets": {
+    "sprite_config": "assets/sprites.json",
+    "enemy_data": "assets/enemies.json",
+    "font_path": "assets/fonts/DejaVuSansMono.ttf",
+    "font_fallback": "C:/Windows/Fonts/consola.ttf",
+    "font_size": 14,
+    "title_font_size": 24
+  },
+  "gameplay": {
+    "starting_depth": 1,
+    "map_width": 80,
+    "map_height": 50,
+    "player_starting_hp": 30,
+    "player_starting_mp": 50,
+    "player_vision_range": 10,
+    "target_fps": 60.0
+  },
+  "ui_layout": {
+    "top_bar_height": 80,
+    "minimap_size": 250,
+    "message_log_height": 180,
+    "hotbar_height": 60
+  },
+  "logging": {
+    "log_file": "game_log.txt",
+    "log_level": "DEBUG"
+  }
+}
