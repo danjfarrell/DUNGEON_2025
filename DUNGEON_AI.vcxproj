@@ -167,10 +167,12 @@
     <ClInclude Include="src\systems\StairSystem.h" />
     <ClInclude Include="src\systems\TurnManager.h" />
     <ClInclude Include="src\ui\Healthbar.h" />
+    <ClInclude Include="src\ui\InventoryPanel.h" />
     <ClInclude Include="src\ui\InventoryUI.h" />
     <ClInclude Include="src\ui\Messagelog.h" />
     <ClInclude Include="src\ui\Minimap.h" />
     <ClInclude Include="src\ui\UILayout.h" />
+    <ClInclude Include="src\ui\UnifiedHotbar.h" />
     <ClInclude Include="src\utils\Logger.h" />
     <ClInclude Include="src\world\DungeonManager.h" />
     <ClInclude Include="src\world\LevelCache.h" />

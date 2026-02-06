@@ -31,7 +31,8 @@
 #include "ui/MessageLog.h" 
 #include "ui/UILayout.h"  // NEW
 #include "ui/Minimap.h"
-#include "ui/InventoryUI.h"
+//#include "ui/InventoryUI.h"
+#include "ui/UnifiedHotbar.h"
 
 #include "ui/HealthBar.h"
 
@@ -330,15 +331,27 @@ int main(int argc, char* argv[]) {
 
     // 3. CREATE INVENTORY UI (after creating other UI elements)
 // ----------------------------------------------------------
-    InventoryUI inventory_ui(
+    //InventoryUI inventory_ui(
+    //    renderer,
+    //    message_log.get_font(),
+    //    &world,
+    //    ui_layout.hotbar.x,        // Position at hotbar location
+    //    ui_layout.hotbar.y - 70,   // Just above hotbar
+    //    50                          // Slot size
+    //);
+
+// 3. CREATE UNIFIED HOTBAR (replaces old hotbar placeholder)
+// -----------------------------------------------------------
+    UnifiedHotbar unified_hotbar(
         renderer,
         message_log.get_font(),
         &world,
-        ui_layout.hotbar.x,        // Position at hotbar location
-        ui_layout.hotbar.y - 70,   // Just above hotbar
-        50                          // Slot size
+        &magic_system->get_spell_database(),
+        ui_layout.hotbar.x,
+        ui_layout.hotbar.y,
+        ui_layout.hotbar.w,
+        ui_layout.hotbar.h
     );
-
 
 
     // DEBUG: Detailed tile-by-tile with sprite names
@@ -484,31 +497,68 @@ int main(int argc, char* argv[]) {
                 //    magic_system->cast_spell(world.get_component_manager(), player, 4);
                 //}
                 // Spell casting (1-5 for spells)
-                if (event.key.key >= SDLK_1 && event.key.key <= SDLK_5) {
-                    // Check if Shift is held (for spells) or not (for items)
+                //if (event.key.key >= SDLK_1 && event.key.key <= SDLK_5) {
+                //    // Check if Shift is held (for spells) or not (for items)
+                //    if (SDL_GetModState() & SDL_KMOD_SHIFT) {
+                //        // Spell casting
+                //        int spell_slot = event.key.key - SDLK_1;
+                //        magic_system->cast_spell(world.get_component_manager(),
+                //            player, spell_slot);
+                //    }
+                //    else {
+                //        // Item usage
+                //        int item_slot = event.key.key - SDLK_1;
+                //        if (consumable_system->use_from_inventory(
+                //            world.get_component_manager(), player, item_slot)) {
+                //            Energy* player_energy = world.get_component<Energy>(player);
+                //            if (player_energy) {
+                //                player_energy->consume_turn();
+                //                turn_manager.end_player_turn();
+                //            }
+                //        }
+                //    }
+                //}
+                //else if (event.key.key == SDLK_0) {
+                //    // 0 key = 10th inventory slot
+                //    if (consumable_system->use_from_inventory(
+                //        world.get_component_manager(), player, 9)) {
+                //        Energy* player_energy = world.get_component<Energy>(player);
+                //        if (player_energy) {
+                //            player_energy->consume_turn();
+                //            turn_manager.end_player_turn();
+                //        }
+                //    }
+                //}
+                // Handle keys 1-0
+                if (event.key.key >= SDLK_1 && event.key.key <= SDLK_9) {
+                    int key_num = event.key.key - SDLK_1 + 1;  // 1-9
+
                     if (SDL_GetModState() & SDL_KMOD_SHIFT) {
-                        // Spell casting
-                        int spell_slot = event.key.key - SDLK_1;
-                        magic_system->cast_spell(world.get_component_manager(),
-                            player, spell_slot);
+                        // SHIFT + 1-5: Cast spells
+                        if (key_num >= 1 && key_num <= 5) {
+                            magic_system->cast_spell(world.get_component_manager(),
+                                player, key_num - 1);
+                        }
                     }
                     else {
-                        // Item usage
-                        int item_slot = event.key.key - SDLK_1;
-                        if (consumable_system->use_from_inventory(
-                            world.get_component_manager(), player, item_slot)) {
-                            Energy* player_energy = world.get_component<Energy>(player);
-                            if (player_energy) {
-                                player_energy->consume_turn();
-                                turn_manager.end_player_turn();
+                        // 6-9: Use items (inventory slots 0-3)
+                        if (key_num >= 6 && key_num <= 9) {
+                            int item_slot = key_num - 6;  // 6→0, 7→1, 8→2, 9→3
+                            if (consumable_system->use_from_inventory(
+                                world.get_component_manager(), player, item_slot)) {
+                                Energy* player_energy = world.get_component<Energy>(player);
+                                if (player_energy) {
+                                    player_energy->consume_turn();
+                                    turn_manager.end_player_turn();
+                                }
                             }
                         }
                     }
                 }
                 else if (event.key.key == SDLK_0) {
-                    // 0 key = 10th inventory slot
+                    // 0 key: Use item from slot 4 (5th item)
                     if (consumable_system->use_from_inventory(
-                        world.get_component_manager(), player, 9)) {
+                        world.get_component_manager(), player, 4)) {
                         Energy* player_energy = world.get_component<Energy>(player);
                         if (player_energy) {
                             player_energy->consume_turn();
@@ -516,7 +566,6 @@ int main(int argc, char* argv[]) {
                         }
                     }
                 }
-
 
 
                 // Stairs
@@ -533,33 +582,33 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                // 4. ADD INPUT HANDLING (in event loop, SDL_EVENT_KEY_DOWN section)
-                // ------------------------------------------------------------------
+                //// 4. ADD INPUT HANDLING (in event loop, SDL_EVENT_KEY_DOWN section)
+                //// ------------------------------------------------------------------
 
-                // Item usage (keys 1-0 for inventory slots)
-                if (event.key.key >= SDLK_1 && event.key.key <= SDLK_9) {
-                    int slot = event.key.key - SDLK_1;  // 0-8
-                    if (consumable_system->use_from_inventory(
-                        world.get_component_manager(), player, slot)) {
-                        // Successfully used item - end player turn
-                        Energy* player_energy = world.get_component<Energy>(player);
-                        if (player_energy) {
-                            player_energy->consume_turn();
-                            turn_manager.end_player_turn();
-                        }
-                    }
-                }
-                else if (event.key.key == SDLK_0) {
-                    // 0 key = 10th slot (index 9)
-                    if (consumable_system->use_from_inventory(
-                        world.get_component_manager(), player, 9)) {
-                        Energy* player_energy = world.get_component<Energy>(player);
-                        if (player_energy) {
-                            player_energy->consume_turn();
-                            turn_manager.end_player_turn();
-                        }
-                    }
-                }
+                //// Item usage (keys 1-0 for inventory slots)
+                //if (event.key.key >= SDLK_1 && event.key.key <= SDLK_9) {
+                //    int slot = event.key.key - SDLK_1;  // 0-8
+                //    if (consumable_system->use_from_inventory(
+                //        world.get_component_manager(), player, slot)) {
+                //        // Successfully used item - end player turn
+                //        Energy* player_energy = world.get_component<Energy>(player);
+                //        if (player_energy) {
+                //            player_energy->consume_turn();
+                //            turn_manager.end_player_turn();
+                //        }
+                //    }
+                //}
+                //else if (event.key.key == SDLK_0) {
+                //    // 0 key = 10th slot (index 9)
+                //    if (consumable_system->use_from_inventory(
+                //        world.get_component_manager(), player, 9)) {
+                //        Energy* player_energy = world.get_component<Energy>(player);
+                //        if (player_energy) {
+                //            player_energy->consume_turn();
+                //            turn_manager.end_player_turn();
+                //        }
+                //    }
+                //}
 
 
 
@@ -1067,8 +1116,18 @@ int main(int argc, char* argv[]) {
 
         // 5. RENDER INVENTORY UI (in render loop, after message_log.render())
         // --------------------------------------------------------------------
-        inventory_ui.render(player);
+        //inventory_ui.render(player);
         
+
+        // 5. RENDER UNIFIED HOTBAR (replaces old placeholder hotbar)
+        // -----------------------------------------------------------
+
+        // REMOVE THIS (old placeholder):
+        // ui_layout.render_hotbar_placeholder(renderer, ui_font);
+
+        // ADD THIS INSTEAD:
+        unified_hotbar.render(player);
+
         // Top bar border
         SDL_SetRenderDrawColor(renderer, 100, 100, 120, 255);
         SDL_RenderRect(renderer, &top_bar_rect);
@@ -1109,7 +1168,7 @@ int main(int argc, char* argv[]) {
 
         // ADD NEW MINIMAP RENDER:
         minimap.render();  // Draws the actual minimap with tiles!
-
+        //unified_hotbar.render(player);  // NEW: Unified hotbar
         // NEW: DEBUG - Optionally render labels (requires font)
         if (font_loaded) {
             // You'll need to expose the font from MessageLog or create a separate debug font

@@ -55,10 +55,10 @@ struct UILayout {
 
         // Hotbar (bottom, above message log) - 60 pixels high
         hotbar = {
-            screen_width / 2 - 180,  // x (centered, 6 slots * 60px)
+            screen_width / 2 - 160,  // x (centered, 6 slots * 60px)
             screen_height - 250,      // y (above message log)
-            360,                      // width (6 slots * 60px)
-            50                        // height
+            610,                      // width (6 slots * 60px)
+            60                        // height
         };
 
         // Game viewport (the actual play area)
@@ -185,7 +185,7 @@ struct UILayout {
 
         //render_top_bar_placeholder(renderer, font);
         //render_minimap_placeholder(renderer, font);
-        render_hotbar_placeholder(renderer, font);
+        //render_hotbar_placeholder(renderer, font);
     }
 
 private:
