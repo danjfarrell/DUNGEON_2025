@@ -2,40 +2,37 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
 #include <memory>
 #include <string>
 
-// Forward declarations
-#include "../ecs/World.h"
+// Only include what we absolutely need in the header
 #include "../ecs/Entity.h"
 #include "../config/GameConfig.h"
 #include "ResourceManager.h"
-#include "../graphics/SpriteManager.h"
-#include "../data/EnemyData.h"
-#include "../world/DungeonManager.h"
-#include "../world/Map.h"
-#include "../world/TileVisibility.h"
-#include "../spawning/EnemySpawner.h"
-#include "../ui/MessageLog.h"
-#include "../ui/UILayout.h"
-#include "../ui/Minimap.h"
-#include "../ui/UnifiedHotbar.h"
-#include "../ui/InventoryPanel.h"
-#include "../ui/HealthBar.h"
-#include "../systems/Camera.h"
-#include "../systems/TurnManager.h"
-#include "../systems/CombatSystem.h"
-#include "../systems/MagicSystem.h"
-#include "../systems/ExperienceSystem.h"
-#include "../systems/StairSystem.h"
-#include "../systems/ConsumableSystem.h"
-#include "../systems/MapRenderSystem.h"
-#include "../systems/RenderSystem.h"
-#include "../systems/DeathSystem.h"
-#include "../systems/ItemPickupSystem.h"  
-#include "../systems/AISystem.h"
-#include "../systems/SpriteUpdateSystem.h"
+
+// Forward declarations (avoid heavy includes)
+class World;
+class SpriteManager;
+class EnemyDataManager;
+class DungeonManager;
+class EnemySpawner;
+class Map;
+class TileVisibility;
+class MessageLog;
+struct UILayout;
+class Minimap;
+class UnifiedHotbar;
+class InventoryPanel;
+class HealthBar;
+class Camera;
+class TurnManager;
+class CombatSystem;
+class MagicSystem;
+class ExperienceSystem;
+class StairSystem;
+class ConsumableSystem;
+class MapRenderSystem;
+class RenderSystem;
 
 // ============================================================================
 // Game Class - Encapsulates entire game state and logic
@@ -75,7 +72,7 @@ private:
     Map* current_map = nullptr;
 
     // Systems (pointers to systems owned by World)
-    TurnManager* turn_manager = nullptr;
+    std::unique_ptr<TurnManager> turn_manager;
     CombatSystem* combat_system = nullptr;
     MagicSystem* magic_system = nullptr;
     ExperienceSystem* xp_system = nullptr;

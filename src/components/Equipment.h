@@ -23,9 +23,10 @@ struct Equipment {
 
     Equipment() {
         // Initialize all slots to 0 (empty)
-        for (auto& slot : slots) {
-            slot = 0;
-        }
+        //for (auto& slot : slots) {
+        //    slot = 0;
+        //}
+        slots.fill(0);
     }
 
     // Equip an item to a slot

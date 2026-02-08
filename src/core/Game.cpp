@@ -6,6 +6,45 @@
 #include "../utils/Logger.h"
 #include "GameInitializer.h"
 
+// ECS and entities
+#include "../ecs/World.h"
+
+// Graphics and rendering
+#include "../graphics/SpriteManager.h"
+#include "../systems/Camera.h"
+#include "../systems/MapRenderSystem.h"
+#include "../systems/RenderSystem.h"
+#include "../systems/SpriteUpdateSystem.h"
+
+// World and map
+#include "../world/Map.h"
+#include "../world/DungeonManager.h"
+#include "../world/TileVisibility.h"
+#include "../data/EnemyData.h"
+#include "../spawning/EnemySpawner.h"
+
+// Systems
+#include "../systems/TurnManager.h"
+#include "../systems/CombatSystem.h"
+#include "../systems/MagicSystem.h"
+#include "../systems/ExperienceSystem.h"
+#include "../systems/StairSystem.h"
+#include "../systems/ConsumableSystem.h"
+#include "../systems/AISystem.h"
+#include "../systems/ItemPickupSystem.h"
+#include "../systems/DeathSystem.h"
+
+// UI
+#include "../ui/MessageLog.h"
+#include "../ui/UILayout.h"
+#include "../ui/Minimap.h"
+#include "../ui/UnifiedHotbar.h"
+#include "../ui/InventoryPanel.h"
+#include "../ui/HealthBar.h"
+
+// Components
+#include "../components/Components.h"
+
 // ============================================================================
 // Constructor & Destructor
 // ============================================================================
@@ -14,7 +53,6 @@ Game::Game()
     : running(false),
     player(0),
     current_map(nullptr),
-    turn_manager(nullptr),
     combat_system(nullptr),
     magic_system(nullptr),
     xp_system(nullptr),
@@ -23,17 +61,13 @@ Game::Game()
     map_render_system(nullptr),
     render_system(nullptr),
     tile_vis(nullptr) {
-    LOG_INFO("Game object created");
+    // Don't log here - logger not initialized yet!
 }
 
 Game::~Game() {
     LOG_INFO("=== Game shutting down ===");
     // RAII handles cleanup automatically via unique_ptrs
-    // Delete raw pointer that we created
-    if (turn_manager) {
-        delete turn_manager;
-        turn_manager = nullptr;
-    }
+    // No manual cleanup needed!
 }
 
 // ============================================================================
@@ -41,6 +75,9 @@ Game::~Game() {
 // ============================================================================
 
 bool Game::initialize() {
+    // CRITICAL: Initialize logger FIRST before any LOG_* calls
+    Logger::get_instance("game_log.txt", LogLevel::DEBUG);
+
     LOG_INFO("=== Initializing Game ===");
 
     // Load configuration
@@ -48,7 +85,7 @@ bool Game::initialize() {
         return false;
     }
 
-    // Initialize logger with config settings
+    // Re-initialize logger with config settings
     Logger::get_instance(config.logging.log_file, config.get_log_level());
 
     // Initialize SDL and create window (RAII)
@@ -194,8 +231,8 @@ bool Game::init_world() {
 
     GameInitializer::init_message_log(*message_log, config);
 
-    // Create turn manager
-    turn_manager = new TurnManager(message_log.get());
+    // Create turn manager with RAII
+    turn_manager = std::make_unique<TurnManager>(message_log.get());
 
     // Add all systems and capture pointers
     xp_system = world->add_system<ExperienceSystem>(message_log.get());
@@ -667,7 +704,7 @@ void Game::clear_non_player_entities() {
         if (components.has_component<Name>(e)) components.remove_component<Name>(e);
     }
 }
-//}
+
 
 void Game::update_systems_for_new_level() {
     stair_system->set_map(current_map);

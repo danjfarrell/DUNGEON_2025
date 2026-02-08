@@ -41,10 +41,10 @@ struct LootTable {
 
 // Enemy stats
 struct EnemyStats {
-    int hp;
-    int attack;
-    int defense;
-    int speed;
+    int hp =0;
+    int attack = 0;
+    int defense = 0;
+    int speed = 0;
 };
 
 // Complete enemy definition
@@ -52,8 +52,8 @@ struct EnemyDefinition {
     std::string name;
     std::string sprite;
     EnemyStats stats;
-    std::string ai_type;  // "aggressive", "patrol", "idle"
-    int xp_reward;
+    std::string ai_type = "idle";  // "aggressive", "patrol", "idle"
+    int xp_reward =0;
     LootTable loot_table;
 };
 
