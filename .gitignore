@@ -402,3 +402,5 @@ FodyWeavers.xsd
 
 .src/main_*.cpp
 
+src/main_old.cpp
+src/main_refactored_old.cpp
