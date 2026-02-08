@@ -102417,3 +102417,97 @@ Log started at 2026-02-06 15:50:32
 Controls:
 15:50:33 [INFO] 	Arrow Keys - Move player & change facing direction
 15:50:33 [INFO] 	ESC - Quit
+
+========================================
+Log started at 2026-02-07 19:09:55
+========================================
+19:09:55 [INFO] Game object created
+19:09:55 [INFO] === Initializing Game ===
+19:09:55 [INFO] Successfully loaded config from: assets/config.json
+19:09:55 [INFO] SDL initialized successfully
+19:09:55 [INFO] TTF initialized successfully
+19:09:55 [INFO] Created window: 1280x720
+19:09:55 [INFO] Created renderer
+19:09:55 [INFO] Loaded font: assets/fonts/DejaVuSansMono.ttf (size 14)
+19:09:55 [INFO] Loaded font: assets/fonts/DejaVuSansMono.ttf (size 24)
+19:09:55 [INFO] All resources initialized
+19:09:55 [INFO] UI Layout: Game viewport 1020x380
+19:09:55 [INFO] === Initializing Sprite System ===
+19:09:55 [INFO] === SPRITE CONFIG DUMP ===
+19:09:55 [INFO] Number of sprite sheets: 6
+19:09:55 [INFO] Sheet 0: demonic (assets/tiles/demonic_dungeon_full.png)
+19:09:55 [INFO] Sheet 1: frozen (assets/tiles/frozen_full.png)
+19:09:55 [INFO] Sheet 2: haunted (assets/tiles/haunted_full.png)
+19:09:55 [INFO] Sheet 3: demonic_caves (assets/tiles/Cave.png)
+19:09:55 [INFO] Sheet 4: demonic_dungeons (assets/tiles/Dungeon.png)
+19:09:55 [INFO] Sheet 5: demonic_heroes (assets/tiles/Heroes_tp.png)
+19:09:55 [INFO] Number of sprite definitions: 39
+19:09:55 [DEBUG]   'wall.single' -> sheet:3 tile:(5,1) layer:1
+19:09:55 [DEBUG]   'door.closed' -> sheet:3 tile:(6,2) layer:1
+19:09:55 [DEBUG]   'potion.large' -> sheet:0 tile:(12,18) layer:3
+19:09:55 [DEBUG]   'door.iron' -> sheet:1 tile:(5,7) layer:1
+19:09:55 [DEBUG]   'door.wooden' -> sheet:1 tile:(3,7) layer:1
+19:09:55 [DEBUG]   'door.open' -> sheet:3 tile:(6,5) layer:1
+19:09:55 [DEBUG]   'wall.ice' -> sheet:1 tile:(0,1) layer:1
+19:09:55 [DEBUG]   'goblin.attack' -> sheet:0 tile:(0,17) layer:5
+19:09:55 [DEBUG]   'floor.ice' -> sheet:0 tile:(9,2) layer:0
+19:09:55 [DEBUG]   'floor.stone' -> sheet:0 tile:(9,2) layer:0
+19:09:55 [DEBUG]   'goblin.idle' -> sheet:0 tile:(0,17) layer:5
+19:09:55 [DEBUG]   'potion.small' -> sheet:0 tile:(12,17) layer:3
+19:09:55 [DEBUG]   'gold' -> sheet:0 tile:(17,21) layer:0
+19:09:55 [DEBUG]   'wall.end.east' -> sheet:3 tile:(2,2) layer:1
+19:09:55 [DEBUG]   'wall.corner.nw' -> sheet:3 tile:(4,2) layer:1
+19:09:55 [DEBUG]   'orc' -> sheet:0 tile:(4,18) layer:5
+19:09:55 [DEBUG]   'player.east' -> sheet:5 tile:(0,3) layer:10
+19:09:55 [DEBUG]   'player.north' -> sheet:5 tile:(0,3) layer:10
+19:09:55 [DEBUG]   'player.south' -> sheet:5 tile:(0,3) layer:10
+19:09:55 [DEBUG]   'player.west' -> sheet:5 tile:(0,3) layer:10
+19:09:55 [DEBUG]   'shield' -> sheet:0 tile:(16,19) layer:3
+19:09:55 [DEBUG]   'wall.end.west' -> sheet:3 tile:(3,1) layer:1
+19:09:55 [DEBUG]   'wall.corner.ne' -> sheet:3 tile:(2,1) layer:1
+19:09:55 [DEBUG]   'stairs.down' -> sheet:3 tile:(1,9) layer:1
+19:09:55 [DEBUG]   'stairs.up' -> sheet:3 tile:(2,9) layer:1
+19:09:55 [DEBUG]   'sword' -> sheet:0 tile:(18,18) layer:3
+19:09:55 [DEBUG]   'wall.corner.se' -> sheet:3 tile:(2,0) layer:1
+19:09:55 [DEBUG]   'wall.corner.sw' -> sheet:3 tile:(4,0) layer:1
+19:09:55 [DEBUG]   'wall.vertical' -> sheet:3 tile:(4,1) layer:1
+19:09:55 [DEBUG]   'wall.cross' -> sheet:3 tile:(5,0) layer:1
+19:09:55 [DEBUG]   'wall.end.north' -> sheet:3 tile:(0,2) layer:1
+19:09:55 [DEBUG]   'wall.end.south' -> sheet:3 tile:(1,2) layer:1
+19:09:55 [DEBUG]   'wall.haunted' -> sheet:2 tile:(0,2) layer:1
+19:09:55 [DEBUG]   'wall.horizontal' -> sheet:3 tile:(3,0) layer:1
+19:09:55 [DEBUG]   'wall.stone' -> sheet:3 tile:(1,5) layer:1
+19:09:55 [DEBUG]   'wall.t.east' -> sheet:3 tile:(0,1) layer:1
+19:09:55 [DEBUG]   'wall.t.north' -> sheet:3 tile:(1,1) layer:1
+19:09:55 [DEBUG]   'wall.t.south' -> sheet:3 tile:(0,0) layer:1
+19:09:55 [DEBUG]   'wall.t.west' -> sheet:3 tile:(1,0) layer:1
+19:09:55 [INFO] === END SPRITE CONFIG DUMP ===
+19:09:55 [INFO] Sprite system initialized successfully
+19:09:55 [INFO] === Loading Enemy Data ===
+19:09:55 [INFO] Loaded enemy: goblin (Goblin)
+19:09:55 [INFO] Loaded enemy: orc (Orc Warrior)
+19:09:55 [INFO] Loaded enemy: rat (Giant Rat)
+19:09:55 [INFO] Successfully loaded 3 enemy types
+19:09:55 [INFO] Enemy data loaded successfully
+19:09:55 [INFO] Map:Generating map with: Room and Corridor Generator
+19:09:55 [INFO] === Initializing Message Log ===
+19:09:55 [INFO] Loaded font: assets/fonts/DejaVuSansMono.ttf
+19:09:55 [INFO] === Creating Player Entity ===
+19:09:55 [INFO] Player entity created with ID: 0
+19:09:55 [INFO] === Teaching Starting Spells ===
+19:09:55 [INFO] Starting spells equipped
+19:09:55 [INFO] === Game initialization complete ===
+19:09:55 [INFO] === Starting game loop ===
+19:10:17 [INFO] === Game loop ended ===
+19:10:17 [INFO] === Game shutting down ===
+19:10:17 [INFO] Cleaning up resources (RAII)
+19:10:17 [DEBUG] Closed font: assets/fonts/DejaVuSansMono.ttf
+19:10:17 [DEBUG] Closed font: assets/fonts/DejaVuSansMono.ttf
+19:10:17 [INFO] Destroyed renderer
+19:10:17 [INFO] Destroyed window
+19:10:17 [INFO] TTF shut down
+19:10:17 [INFO] SDL shut down
+========================================
+Log ended
+========================================
+

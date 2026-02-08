@@ -43,28 +43,49 @@
     <Filter Include="Header Files\magic">
       <UniqueIdentifier>{6978e2d3-eac8-4bcd-9247-5a9a30c700e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{76e64330-3fe9-44bd-a3b6-248ac40ec0d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{08f8382b-222c-42ed-a805-4e5b2bf8eadb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\world">
+      <UniqueIdentifier>{a2f961fa-b1e4-45c4-b4d2-667caf5c521e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\systems">
+      <UniqueIdentifier>{9bf57dcb-9409-435e-a4e0-78585877bd3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ecs">
+      <UniqueIdentifier>{3c249c19-3ced-47ab-aa7c-80b9dc45b775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{81dc8ccd-e600-4580-a30f-876b003cf050}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\world\Map.cpp">
+      <Filter>Source Files\world</Filter>
+    </ClCompile>
+    <ClCompile Include="src\world\MapGenerators.cpp">
+      <Filter>Source Files\world</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\MapRenderSystem.cpp">
+      <Filter>Source Files\systems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\SpriteUpdateSystem.cpp">
+      <Filter>Source Files\systems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ecs\World.cpp">
+      <Filter>Source Files\ecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Game.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ecs\World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\systems\RenderingSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\systems\SpriteUpdateSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\world\Map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\world\MapGenerators.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\systems\MapRenderSystem.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\systems\RenderSystem.cpp">
+      <Filter>Source Files\systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -185,12 +206,27 @@
     <ClInclude Include="src\components\Equipment.h">
       <Filter>Header Files\components</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\GameInitializer.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ResourceManager.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\config\GameConfig.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Game.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ouput\assets\sprites.json">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ouput\assets\enemies.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ouput\assets\config.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

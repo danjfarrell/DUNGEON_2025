@@ -132,10 +132,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\core\Game.cpp" />
     <ClCompile Include="src\ecs\World.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\systems\MapRenderSystem.cpp" />
-    <ClCompile Include="src\systems\RenderingSystem.cpp" />
+    <ClCompile Include="src\systems\RenderSystem.cpp" />
     <ClCompile Include="src\systems\SpriteUpdateSystem.cpp" />
     <ClCompile Include="src\world\Map.cpp" />
     <ClCompile Include="src\world\MapGenerators.cpp" />
@@ -144,6 +145,10 @@
     <ClInclude Include="src\components\Components.h" />
     <ClInclude Include="src\components\Equipment.h" />
     <ClInclude Include="src\components\MagicComponents.h" />
+    <ClInclude Include="src\config\GameConfig.h" />
+    <ClInclude Include="src\core\Game.h" />
+    <ClInclude Include="src\core\GameInitializer.h" />
+    <ClInclude Include="src\core\ResourceManager.h" />
     <ClInclude Include="src\data\EnemyData.h" />
     <ClInclude Include="src\ecs\ComponentArray.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
@@ -182,6 +187,7 @@
     <ClInclude Include="src\world\TileVisibility.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ouput\assets\config.json" />
     <None Include="ouput\assets\enemies.json" />
     <None Include="ouput\assets\sprites.json" />
   </ItemGroup>
