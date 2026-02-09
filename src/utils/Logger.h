@@ -6,6 +6,7 @@
 #include <sstream>
 #include <ctime>
 #include <mutex>
+#include <chrono>
 
 enum class LogLevel {
     DEBUG,
@@ -19,12 +20,26 @@ private:
     std::ofstream logfile;
     LogLevel min_level;
     std::mutex log_mutex;  // Thread-safe logging
+    bool file_open_failed;  // Track initialization failure
 
     std::string get_timestamp() {
-        auto t = std::time(nullptr);
-        auto tm = *std::localtime(&t);
+        //auto t = std::time(nullptr);
+        //auto tm = *std::localtime(&t);
+        //char buffer[20];
+        //std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
+        //return std::string(buffer);
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+
+        std::tm tm_buf;
+        #ifdef _WIN32
+        localtime_s(&tm_buf, &time_t);  // Windows thread-safe
+        #else
+        localtime_r(&time_t, &tm_buf);  // POSIX thread-safe
+        #endif
+
         char buffer[20];
-        std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
+        std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm_buf);
         return std::string(buffer);
     }
 
@@ -40,8 +55,17 @@ private:
 
     // Private constructor for singleton
     Logger(const std::string& filename, LogLevel min_level)
-        : min_level(min_level) {
+        : min_level(min_level), file_open_failed(false) {
         logfile.open(filename, std::ios::out | std::ios::app);
+        
+        if (!logfile.is_open()) {
+            // CRITICAL: Report file failure to stderr
+            file_open_failed = true;
+            std::cerr << "[LOGGER ERROR] Failed to open log file: " << filename << std::endl;
+            std::cerr << "[LOGGER ERROR] Logging to console only!" << std::endl;
+            return;
+        }
+        
         if (logfile.is_open()) {
             auto t = std::time(nullptr);
             auto tm = *std::localtime(&t);
@@ -64,7 +88,9 @@ public:
         static Logger instance(filename, level);
         return instance;
     }
-
+    bool is_file_logging_enabled() const {
+        return logfile.is_open() && !file_open_failed;
+    }
     ~Logger() {
         if (logfile.is_open()) {
             logfile << "========================================\n";

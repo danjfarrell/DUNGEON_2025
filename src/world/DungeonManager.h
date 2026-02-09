@@ -39,6 +39,8 @@ public:
     Map* generate_level(int depth, Position* player_exit_pos = nullptr, bool descending = true) {
         current_depth = depth;
 
+
+
         // Check if level is cached
         LevelData* cached = level_cache.get_level(depth);
         if (cached) {
@@ -129,6 +131,13 @@ public:
             }
         }
 
+        // Cache with enemies_spawned = false (not spawned yet!)
+        level_cache.cache_level(depth, std::move(new_map),
+            up_stairs_x, up_stairs_y,
+            down_stairs_x, down_stairs_y,
+            false);  // <-- NEW PARAMETER
+
+
         return current_map;
     }
 
@@ -165,7 +174,8 @@ public:
 
     void spawn_enemies(EnemySpawner& spawner, World& world) {
         LevelData* cached = level_cache.get_level(current_depth);
-        if (cached) {
+
+        if (cached && cached->enemies_spawned) {
             return;
         }
 
@@ -189,6 +199,9 @@ public:
             Entity enemy = spawner.spawn(enemy_type, room.center_x(), room.center_y());
 
             scale_enemy_for_depth(world, enemy, current_depth);
+        }
+        if (cached) {
+            cached->enemies_spawned = true;
         }
     }
 
