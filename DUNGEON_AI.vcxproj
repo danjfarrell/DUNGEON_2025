@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\core\Game.cpp" />
+    <ClCompile Include="src\core\GameBootstrap.cpp" />
     <ClCompile Include="src\ecs\World.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\systems\MapRenderSystem.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="src\components\MagicComponents.h" />
     <ClInclude Include="src\config\GameConfig.h" />
     <ClInclude Include="src\core\Game.h" />
+    <ClInclude Include="src\core\GameBootstrap.h" />
     <ClInclude Include="src\core\GameInitializer.h" />
     <ClInclude Include="src\core\ResourceManager.h" />
     <ClInclude Include="src\data\EnemyData.h" />

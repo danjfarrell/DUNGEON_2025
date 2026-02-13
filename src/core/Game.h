@@ -1,4 +1,5 @@
 // src/core/Game.h
+// Simplified Game class - initialization delegated to GameBootstrap
 #pragma once
 
 #include <SDL3/SDL.h>
@@ -35,7 +36,16 @@ class MapRenderSystem;
 class RenderSystem;
 
 // ============================================================================
-// Game Class - Encapsulates entire game state and logic
+// Game Class - Main game coordinator (Simplified)
+// ============================================================================
+// Responsibilities:
+// - Run main game loop
+// - Coordinate game systems
+// - Handle input and rendering
+// 
+// Initialization delegated to GameBootstrap
+// Input handling will be extracted to InputController (Phase 2)
+// Rendering will be extracted to HudRenderer (Phase 3)
 // ============================================================================
 
 class Game {
@@ -43,7 +53,7 @@ public:
     Game();
     ~Game();
 
-    // Initialization
+    // Initialization (delegates to GameBootstrap)
     bool initialize();
 
     // Main game loop
@@ -97,57 +107,33 @@ private:
     TileVisibility* tile_vis = nullptr;
 
     // ========================================
-    // Initialization Methods
-    // ========================================
-
-    bool load_config();
-    bool init_resources();
-    bool init_managers();
-    void init_ui_layout();
-    bool init_world();
-    void init_ui_components();
-    void init_player();
-
-    // ========================================
-    // Event Handling
+    // Game Loop Methods
     // ========================================
 
     void handle_event(const SDL_Event& event);
+    void update();
+    void render();
+
+    // ========================================
+    // Input Handling (TODO: Extract to InputController - Phase 2)
+    // ========================================
+
     void handle_spell_and_item_hotkeys(const SDL_Event& event);
     void handle_stair_navigation(const SDL_Event& event);
     void handle_minimap_toggle(const SDL_Event& event);
     void handle_player_movement(const SDL_Event& event);
 
-    // Movement helpers
-    void handle_wall_collision(int x, int y);
-    bool check_entity_collision(int new_x, int new_y);
-    void move_player(int new_x, int new_y);
-    void add_flavor_text();
-    bool use_consumable(int slot_index);
-    void end_player_turn();
-
     // ========================================
-    // Update Logic
+    // Rendering (TODO: Extract to HudRenderer - Phase 3)
     // ========================================
 
-    void update();
-    void handle_level_transition();
-    void clear_non_player_entities();
-    void update_systems_for_new_level();
-    void restore_or_create_exploration(int depth);
-    void recreate_camera();
-    void check_player_death();
-
-    // ========================================
-    // Rendering
-    // ========================================
-
-    void render();
     void render_ui_backgrounds();
     void render_ui_elements();
-    void render_player_stats();
-    void render_stat_text(SDL_Renderer* renderer, TTF_Font* font,
-        const std::string& text, int x, int y,
-        SDL_Color color);
-    void render_hp_display(int current_hp, int max_hp, int x, int y);
+
+    // ========================================
+    // Turn Management
+    // ========================================
+
+    void end_player_turn();
+    bool use_consumable(int slot);
 };

@@ -22,6 +22,10 @@ private:
     }
 
 public:
+    // Add this method
+    void set_world(World* new_world) {
+        world = new_world;
+    }
     EnemySpawner(World* w, SpriteManager* sm, EnemyDataManager* ed)
         : world(w), sprite_manager(sm), enemy_data(ed) {
     }

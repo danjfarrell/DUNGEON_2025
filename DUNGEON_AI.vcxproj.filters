@@ -87,6 +87,9 @@
     <ClCompile Include="src\systems\RenderSystem.cpp">
       <Filter>Source Files\systems</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\GameBootstrap.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\Camera.h">
@@ -216,6 +219,9 @@
       <Filter>Header Files\config</Filter>
     </ClInclude>
     <ClInclude Include="src\core\Game.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\GameBootstrap.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
   </ItemGroup>
