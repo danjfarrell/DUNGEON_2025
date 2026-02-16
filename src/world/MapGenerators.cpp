@@ -525,8 +525,6 @@ void CellularAutomataGenerator::smooth_map(Map& map) {
 }
 
 void CellularAutomataGenerator::place_walls_around_floors(Map& map) {
-    std::vector<std::pair<int, int>> walls_to_place;
-
     for (int y = 0; y < map.get_height(); y++) {
         for (int x = 0; x < map.get_width(); x++) {
             if (map.get_tile(x, y) == TileType::FLOOR) {
@@ -540,15 +538,13 @@ void CellularAutomataGenerator::place_walls_around_floors(Map& map) {
                         if (nx >= 0 && nx < map.get_width() &&
                             ny >= 0 && ny < map.get_height() &&
                             map.get_tile(nx, ny) == TileType::VOID) {
-                            walls_to_place.push_back({ nx, ny });
+
+                            //  Place immediately
+                            map.set_tile(nx, ny, TileType::WALL);
                         }
                     }
                 }
             }
         }
-    }
-
-    for (const auto& pos : walls_to_place) {
-        map.set_tile(pos.first, pos.second, TileType::WALL);
     }
 }
