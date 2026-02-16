@@ -112,12 +112,13 @@ public:
             down_stairs_y = last_room.center_y();
         }
 
-        current_map = new_map.get();
-
-        // Cache with BOTH positions
+        //  FIX: Cache FIRST, then get pointer
         level_cache.cache_level(depth, std::move(new_map),
             up_stairs_x, up_stairs_y,
             down_stairs_x, down_stairs_y);
+
+        // Get pointer from cache (valid memory)
+        current_map = level_cache.get_level(depth)->map.get();
 
         // Set player spawn based on direction
         if (player_exit_pos) {
@@ -130,13 +131,6 @@ public:
                 player_exit_pos->y = down_stairs_y;
             }
         }
-
-        // Cache with enemies_spawned = false (not spawned yet!)
-        level_cache.cache_level(depth, std::move(new_map),
-            up_stairs_x, up_stairs_y,
-            down_stairs_x, down_stairs_y,
-            false);  // <-- NEW PARAMETER
-
 
         return current_map;
     }

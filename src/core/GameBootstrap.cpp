@@ -300,23 +300,28 @@ bool GameBootstrap::init_world(
 ) {
     LOG_INFO("Phase 5: Initializing world and systems");
 
-    // Create world
+    LOG_INFO("Phase 5.1: Creating World");
     world = std::make_unique<World>();
 
-    // Update enemy spawner with world pointer
+    LOG_INFO("Phase 5.2: Setting enemy spawner world pointer");
     enemy_spawner->set_world(world.get());
 
-    // Generate first level
+    LOG_INFO("Phase 5.3: Generating first level (depth " + std::to_string(config.gameplay.starting_depth) + ")");
     current_map = dungeon_manager->generate_level(config.gameplay.starting_depth);
+    LOG_INFO("Phase 5.3 complete: Level generated");
+    LOG_INFO("Phase 5.3 complete: Level generated");
 
-    // Initialize visibility
+    LOG_INFO("Phase 5.4: Initializing tile visibility (" +
+        std::to_string(current_map->get_width()) + "x" +
+        std::to_string(current_map->get_height()) + ")");
     world->initialize_tile_visibility(
         current_map->get_width(),
         current_map->get_height()
     );
     tile_vis = world->get_tile_visibility();
+    LOG_INFO("Phase 5.4 complete: Visibility initialized");
 
-    // Create camera
+    LOG_INFO("Phase 5.5: Creating camera");
     camera = std::make_unique<Camera>(
         ui_layout->game_viewport.w,
         ui_layout->game_viewport.h,
@@ -324,6 +329,7 @@ bool GameBootstrap::init_world(
         current_map->get_height(),
         config.display.get_scaled_tile_size()
     );
+    LOG_INFO("Phase 5.5 complete: Camera created");
 
     // Create message log
     message_log = std::make_unique<MessageLog>(
