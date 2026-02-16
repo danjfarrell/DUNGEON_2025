@@ -282,23 +282,29 @@ void Game::handle_player_movement(const SDL_Event& event) {
             auto& components = world->get_component_manager();
             Entity target = Entity(0);
 
-            for (auto entity : components.get_entities_with_component<Position>()) {
-                if (entity == player) continue;
+            // Get all entities with Position component
+            auto* positions_array = components.get_array<Position>();
+            if (positions_array) {
+                auto& entities = positions_array->get_entities();
 
-                Position* enemy_pos = components.get_component<Position>(entity);
-                Health* health = components.get_component<Health>(entity);
+                for (auto entity : entities) {
+                    if (entity == player) continue;
 
-                if (enemy_pos && health &&
-                    enemy_pos->x == new_x && enemy_pos->y == new_y &&
-                    health->current > 0) {
-                    target = entity;
-                    break;
+                    Position* enemy_pos = components.get_component<Position>(entity);
+                    Health* health = components.get_component<Health>(entity);
+
+                    if (enemy_pos && health &&
+                        enemy_pos->x == new_x && enemy_pos->y == new_y &&
+                        health->current > 0) {
+                        target = entity;
+                        break;
+                    }
                 }
             }
 
             if (target != Entity(0)) {
                 // Attack enemy
-                combat_system->melee_attack(components, player, target);
+                combat_system->try_attack(components, player, target);
             }
             else {
                 // Move player
@@ -323,13 +329,10 @@ void Game::update() {
     // Process enemy turns
     turn_manager->process_turn(*world);
 
-    // Update UI
-    hotbar->update(player);
-
     // Check for player death
     Health* player_health = world->get_component<Health>(player);
     if (player_health && player_health->current <= 0) {
-        message_log->add_error("You have died!");
+        message_log->add_combat("You have died!");
         message_log->add_info("Press ESC to quit.");
         // Could add game over state here
     }
@@ -401,12 +404,12 @@ void Game::render_ui_elements() {
     message_log->render();
 
     // Render hotbar
-    hotbar->render();
+    hotbar->render(player);
 
     // Render health bar
     Health* player_health = world->get_component<Health>(player);
     if (player_health) {
-        health_bar->render(player_health->current, player_health->max);
+        health_bar->render(player_health->current, player_health->maximum);
     }
 
     // Render inventory panel if visible

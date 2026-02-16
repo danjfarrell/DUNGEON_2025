@@ -117,24 +117,24 @@ void RoomCorridorGenerator::generate(Map& map, std::mt19937& rng) {
 
 // NEW FUNCTION: Place walls adjacent to floor tiles
 void RoomCorridorGenerator::place_walls_around_floors(Map& map) {
-    std::vector<std::pair<int, int>> walls_to_place;
+        for (int y = 0; y < map.get_height(); y++) {
+            for (int x = 0; x < map.get_width(); x++) {
+                if (map.get_tile(x, y) == TileType::FLOOR) {
+                    // Check all 8 neighbors
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            if (dx == 0 && dy == 0) continue;
 
-    // Find all positions adjacent to floors that are currently VOID
-    for (int y = 0; y < map.get_height(); y++) {
-        for (int x = 0; x < map.get_width(); x++) {
-            if (map.get_tile(x, y) == TileType::FLOOR) {
-                // Check all 8 neighbors
-                for (int dy = -1; dy <= 1; dy++) {
-                    for (int dx = -1; dx <= 1; dx++) {
-                        if (dx == 0 && dy == 0) continue;
+                            int nx = x + dx;
+                            int ny = y + dy;
 
-                        int nx = x + dx;
-                        int ny = y + dy;
+                            if (nx >= 0 && nx < map.get_width() &&
+                                ny >= 0 && ny < map.get_height() &&
+                                map.get_tile(nx, ny) == TileType::VOID) {
 
-                        if (nx >= 0 && nx < map.get_width() &&
-                            ny >= 0 && ny < map.get_height() &&
-                            map.get_tile(nx, ny) == TileType::VOID) {
-                            walls_to_place.push_back({ nx, ny });
+                                //  Place wall IMMEDIATELY - no vector
+                                map.set_tile(nx, ny, TileType::WALL);
+                            }
                         }
                     }
                 }
@@ -142,11 +142,7 @@ void RoomCorridorGenerator::place_walls_around_floors(Map& map) {
         }
     }
 
-    // Place all the walls
-    for (const auto& pos : walls_to_place) {
-        map.set_tile(pos.first, pos.second, TileType::WALL);
-    }
-}
+
 
 
 void RoomCorridorGenerator::create_room_on_map(Map& map, const Room& room) {
@@ -332,12 +328,11 @@ void LarnMazeGenerator::create_open_space(Map& map, std::mt19937& rng) {
     map.add_room(open_area);
 }
 
-void LarnMazeGenerator::place_walls_around_floors(Map& map) {
-    std::vector<std::pair<int, int>> walls_to_place;
-
+void LarnMazeGenerator::place_walls_around_floors(Map& map) {   
     for (int y = 0; y < map.get_height(); y++) {
         for (int x = 0; x < map.get_width(); x++) {
             if (map.get_tile(x, y) == TileType::FLOOR) {
+                // Check all 8 neighbors
                 for (int dy = -1; dy <= 1; dy++) {
                     for (int dx = -1; dx <= 1; dx++) {
                         if (dx == 0 && dy == 0) continue;
@@ -348,16 +343,14 @@ void LarnMazeGenerator::place_walls_around_floors(Map& map) {
                         if (nx >= 0 && nx < map.get_width() &&
                             ny >= 0 && ny < map.get_height() &&
                             map.get_tile(nx, ny) == TileType::VOID) {
-                            walls_to_place.push_back({ nx, ny });
+
+                            // Place wall IMMEDIATELY - no vector
+                            map.set_tile(nx, ny, TileType::WALL);
                         }
                     }
                 }
             }
         }
-    }
-
-    for (const auto& pos : walls_to_place) {
-        map.set_tile(pos.first, pos.second, TileType::WALL);
     }
 }
 // ============================================================================
