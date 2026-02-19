@@ -136,6 +136,7 @@
     <ClCompile Include="src\core\GameBootstrap.cpp" />
     <ClCompile Include="src\ecs\World.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\systems\InputController.cpp" />
     <ClCompile Include="src\systems\MapRenderSystem.cpp" />
     <ClCompile Include="src\systems\RenderSystem.cpp" />
     <ClCompile Include="src\systems\SpriteUpdateSystem.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="src\systems\ConsumableSystem.h" />
     <ClInclude Include="src\systems\DeathSystem.h" />
     <ClInclude Include="src\systems\ExperienceSystem.h" />
+    <ClInclude Include="src\systems\InputController.h" />
     <ClInclude Include="src\systems\ItemPickupSystem.h" />
     <ClInclude Include="src\systems\MagicSystem.h" />
     <ClInclude Include="src\systems\MapRenderSystem.h" />

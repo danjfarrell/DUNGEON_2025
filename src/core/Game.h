@@ -34,6 +34,7 @@ class StairSystem;
 class ConsumableSystem;
 class MapRenderSystem;
 class RenderSystem;
+class InputController;
 
 // ============================================================================
 // Game Class - Main game coordinator (Simplified)
@@ -102,6 +103,10 @@ private:
     std::unique_ptr<InventoryPanel> inventory_panel;
     std::unique_ptr<HealthBar> health_bar;
 
+    // Input
+    std::unique_ptr<InputController> input_controller;
+
+
     // Game state
     bool running = false;
     TileVisibility* tile_vis = nullptr;
@@ -110,7 +115,7 @@ private:
     // Game Loop Methods
     // ========================================
 
-    void handle_event(const SDL_Event& event);
+    //void handle_event(const SDL_Event& event);
     void update();
     void render();
 
@@ -118,10 +123,10 @@ private:
     // Input Handling (TODO: Extract to InputController - Phase 2)
     // ========================================
 
-    void handle_spell_and_item_hotkeys(const SDL_Event& event);
-    void handle_stair_navigation(const SDL_Event& event);
-    void handle_minimap_toggle(const SDL_Event& event);
-    void handle_player_movement(const SDL_Event& event);
+    //void handle_spell_and_item_hotkeys(const SDL_Event& event);
+    //void handle_stair_navigation(const SDL_Event& event);
+    //void handle_minimap_toggle(const SDL_Event& event);
+   //void handle_player_movement(const SDL_Event& event);
 
     // ========================================
     // Rendering (TODO: Extract to HudRenderer - Phase 3)

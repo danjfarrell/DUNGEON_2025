@@ -90,6 +90,9 @@
     <ClCompile Include="src\core\GameBootstrap.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\systems\InputController.cpp">
+      <Filter>Source Files\systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\Camera.h">
@@ -223,6 +226,9 @@
     </ClInclude>
     <ClInclude Include="src\core\GameBootstrap.h">
       <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\InputController.h">
+      <Filter>Header Files\systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
