@@ -404,3 +404,4 @@ FodyWeavers.xsd
 
 src/main_old.cpp
 src/main_refactored_old.cpp
+*.exe

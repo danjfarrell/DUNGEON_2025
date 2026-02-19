@@ -154,6 +154,9 @@ void Game::run() {
             }
 
             if (result.turn_ended) {
+                //  ADD THIS
+                //LOG_INFO("[INPUT] turn_ended=true, calling end_player_turn()");
+                //  END ADD
                 turn_manager->end_player_turn();
             }
 
@@ -359,8 +362,25 @@ void Game::run() {
 // ============================================================================
 
 void Game::update() {
+
+
+    
+    if (turn_manager->is_enemy_turn()) {
+        //  ADD THIS
+        //LOG_INFO("[UPDATE] Processing enemy turn...");
+        //  END ADD
+
+        turn_manager->process_turn(*world);
+        // ... enemy AI runs ...
+
+        //  ADD THIS
+        //LOG_INFO("[UPDATE] Enemy turn complete, calling end_enemy_turn()");
+        //  END ADD
+        turn_manager->end_enemy_turn();
+    }
+    
     // Process enemy turns
-    turn_manager->process_turn(*world);
+    //turn_manager->process_turn(*world);
 
     // Check for player death
     Health* player_health = world->get_component<Health>(player);
@@ -378,6 +398,8 @@ void Game::update() {
 void Game::render() {
     auto* renderer = resources->renderer.get();
 
+
+
     // Clear screen
     SDL_SetRenderDrawColor(renderer, 20, 20, 30, 255);
     SDL_RenderClear(renderer);
@@ -385,10 +407,10 @@ void Game::render() {
     // Render UI backgrounds
     render_ui_backgrounds();
 
-    // Render game world (only if inventory closed and player turn)
-    if (turn_manager->is_player_turn() && !inventory_panel->is_visible()) {
-        world->update(0.016f);
-    }
+
+    world->update(0.016f);
+
+
 
     // Render UI elements
     render_ui_elements();
