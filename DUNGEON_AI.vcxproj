@@ -137,9 +137,11 @@
     <ClCompile Include="src\ecs\World.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\systems\InputController.cpp" />
+    <ClCompile Include="src\systems\LevelTransitionSystem.cpp" />
     <ClCompile Include="src\systems\MapRenderSystem.cpp" />
     <ClCompile Include="src\systems\RenderSystem.cpp" />
     <ClCompile Include="src\systems\SpriteUpdateSystem.cpp" />
+    <ClCompile Include="src\ui\HudRenderer.cpp" />
     <ClCompile Include="src\world\Map.cpp" />
     <ClCompile Include="src\world\MapGenerators.cpp" />
   </ItemGroup>
@@ -170,6 +172,7 @@
     <ClInclude Include="src\systems\ExperienceSystem.h" />
     <ClInclude Include="src\systems\InputController.h" />
     <ClInclude Include="src\systems\ItemPickupSystem.h" />
+    <ClInclude Include="src\systems\LevelTransitionSystem.h" />
     <ClInclude Include="src\systems\MagicSystem.h" />
     <ClInclude Include="src\systems\MapRenderSystem.h" />
     <ClInclude Include="src\systems\RenderSystem.h" />
@@ -177,6 +180,7 @@
     <ClInclude Include="src\systems\StairSystem.h" />
     <ClInclude Include="src\systems\TurnManager.h" />
     <ClInclude Include="src\ui\Healthbar.h" />
+    <ClInclude Include="src\ui\HudRenderer.h" />
     <ClInclude Include="src\ui\InventoryPanel.h" />
     <ClInclude Include="src\ui\InventoryUI.h" />
     <ClInclude Include="src\ui\Messagelog.h" />

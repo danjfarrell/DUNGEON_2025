@@ -221,7 +221,10 @@ public:
         return nullptr;
     }
 
-
+    bool has_enemies_spawned(int depth) {
+        LevelData* level = level_cache.get_level(depth);
+        return level && level->enemies_spawned;
+    }
 
 
 private:

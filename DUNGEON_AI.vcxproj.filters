@@ -61,6 +61,9 @@
     <Filter Include="Source Files\core">
       <UniqueIdentifier>{81dc8ccd-e600-4580-a30f-876b003cf050}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ui">
+      <UniqueIdentifier>{118b7f4f-373a-41bc-9104-248900a3e37a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\world\Map.cpp">
@@ -91,6 +94,12 @@
       <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="src\systems\InputController.cpp">
+      <Filter>Source Files\systems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\HudRenderer.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\LevelTransitionSystem.cpp">
       <Filter>Source Files\systems</Filter>
     </ClCompile>
   </ItemGroup>
@@ -228,6 +237,12 @@
       <Filter>Header Files\core</Filter>
     </ClInclude>
     <ClInclude Include="src\systems\InputController.h">
+      <Filter>Header Files\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\HudRenderer.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\LevelTransitionSystem.h">
       <Filter>Header Files\systems</Filter>
     </ClInclude>
   </ItemGroup>

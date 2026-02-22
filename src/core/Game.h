@@ -35,6 +35,8 @@ class ConsumableSystem;
 class MapRenderSystem;
 class RenderSystem;
 class InputController;
+class HudRenderer;
+class LevelTransitionSystem;
 
 // ============================================================================
 // Game Class - Main game coordinator (Simplified)
@@ -103,9 +105,10 @@ private:
     std::unique_ptr<InventoryPanel> inventory_panel;
     std::unique_ptr<HealthBar> health_bar;
 
-    // Input
+    // Subsystems
     std::unique_ptr<InputController> input_controller;
-
+    std::unique_ptr<HudRenderer>     hud_renderer;    // Phase 3
+    std::unique_ptr<LevelTransitionSystem> level_transition;       // Phase 4
 
     // Game state
     bool running = false;
@@ -132,13 +135,13 @@ private:
     // Rendering (TODO: Extract to HudRenderer - Phase 3)
     // ========================================
 
-    void render_ui_backgrounds();
-    void render_ui_elements();
+    //void render_ui_backgrounds();
+    //void render_ui_elements();
 
     // ========================================
     // Turn Management
     // ========================================
 
-    void end_player_turn();
-    bool use_consumable(int slot);
+    //void end_player_turn();
+    //bool use_consumable(int slot);
 };

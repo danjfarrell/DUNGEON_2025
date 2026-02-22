@@ -32,6 +32,8 @@ private:
 public:
     LevelCache(int max_cache = 20) : max_cached_levels(max_cache) {}
 
+
+
     // Store a level with BOTH stair positions
     void cache_level(int depth, std::unique_ptr<Map> map,
         int up_stairs_x, int up_stairs_y,
