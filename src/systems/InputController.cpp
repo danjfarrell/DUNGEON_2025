@@ -197,11 +197,18 @@ void InputController::handle_player_movement(const SDL_Event& event, InputResult
                     if (entity == player) continue;
 
                     Position* enemy_pos = components.get_component<Position>(entity);
-                    Health* health = components.get_component<Health>(entity);
+                    //Health* health = components.get_component<Health>(entity);
 
-                    if (enemy_pos && health &&
+                    //if (enemy_pos && health &&
+                    //    enemy_pos->x == new_x && enemy_pos->y == new_y &&
+                    //    health->current > 0) {
+
+                    // AFTER — check CombatStats and BlocksMovement instead
+                    CombatStats* stats = components.get_component<CombatStats>(entity);
+                    bool blocks = components.has_component<BlocksMovement>(entity);
+                    if (enemy_pos && stats && blocks &&
                         enemy_pos->x == new_x && enemy_pos->y == new_y &&
-                        health->current > 0) {
+                        stats->is_alive()) {
                         target = entity;
                         break;
                     }

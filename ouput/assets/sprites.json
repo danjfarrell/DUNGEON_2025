@@ -68,6 +68,12 @@
       "tile_y": 17,
       "layer": 5
     },
+	"rat.idle": {
+      "sheet_id": 0,
+      "tile_x": 0,
+      "tile_y": 17,
+      "layer": 5
+    },
     "orc": {
       "sheet_id": 0,
       "tile_x": 4,

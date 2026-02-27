@@ -50,7 +50,13 @@ public:
         // Calculate damage: attack - defense, minimum 1
         int damage = std::max(1, attacker_stats->attack - defender_stats->defense);
         defender_stats->take_damage(damage);
-
+        // After applying damage to defender_stats, add:
+        Health* defender_health = components.get_component<Health>(defender);
+        if (defender_health) {
+            defender_health->current = defender_stats->current_hp;
+            // Keep maximum in sync too in case it was scaled
+            defender_health->maximum = defender_stats->max_hp;
+        }
         // Get names for combat message
         Name* attacker_name = components.get_component<Name>(attacker);
         Name* defender_name = components.get_component<Name>(defender);
