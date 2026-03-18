@@ -92,7 +92,7 @@ public:
 
     // Main initialization entry point
     // Returns fully configured game components or error
-    static BootstrapResult initialize();
+    static BootstrapResult initialize(unsigned int seed = 0);
 
 private:
     // Phase 1: Configuration

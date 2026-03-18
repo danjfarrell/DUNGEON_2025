@@ -41,6 +41,7 @@ struct GameConfig {
         int player_starting_mp = 50;
         int player_vision_range = 10;
         float target_fps = 60.0f;
+        unsigned int seed = 0;
     } gameplay;
     
     // UI Layout percentages (relative to screen size)
@@ -103,6 +104,7 @@ struct GameConfig {
                 gameplay.player_starting_mp = g.value("player_starting_mp", gameplay.player_starting_mp);
                 gameplay.player_vision_range = g.value("player_vision_range", gameplay.player_vision_range);
                 gameplay.target_fps = g.value("target_fps", gameplay.target_fps);
+                gameplay.seed = g.value("seed", gameplay.seed);
             }
             
             // Parse UI layout

@@ -48,7 +48,7 @@
 // Main Bootstrap Entry Point
 // ============================================================================
 
-GameBootstrap::BootstrapResult GameBootstrap::initialize() {
+GameBootstrap::BootstrapResult GameBootstrap::initialize(unsigned int seed) {
     BootstrapResult result;
     result.success = false;
 
@@ -237,10 +237,31 @@ bool GameBootstrap::init_managers(
     GameInitializer::init_enemy_data(*enemy_data, config);
 
     // Create dungeon manager
+    //dungeon_manager = std::make_unique<DungeonManager>(
+    //    config.gameplay.map_width,
+    //    config.gameplay.map_height
+    //);
+
+    // AFTER:
+    // Generate seed now if not set, so we can log it
+    unsigned int seed = config.gameplay.seed;
+    if (seed == 0) {
+        seed = std::random_device{}();
+    }
+    // Log it — this is how players can replay a run
+    LOG_INFO("=== GAME SEED: " + std::to_string(seed) + " ===");
+    LOG_INFO("    Replay with: --seed " + std::to_string(seed));
+
     dungeon_manager = std::make_unique<DungeonManager>(
         config.gameplay.map_width,
-        config.gameplay.map_height
+        config.gameplay.map_height,
+        seed
     );
+
+    // Store back so everything downstream can see it
+    // (optional but useful for display in UI later)
+    // config.gameplay.seed = seed;  // config is const& here, so skip or change signature
+
 
     // Create enemy spawner (world pointer will be set later)
     enemy_spawner = std::make_unique<EnemySpawner>(

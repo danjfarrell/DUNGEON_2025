@@ -57,7 +57,7 @@ public:
     ~Game();
 
     // Initialization (delegates to GameBootstrap)
-    bool initialize();
+    bool initialize(unsigned int seed = 0);
 
     // Main game loop
     void run();

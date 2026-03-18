@@ -50,8 +50,8 @@ Game::~Game() {
 // Initialization
 // ============================================================================
 
-bool Game::initialize() {
-    auto result = GameBootstrap::initialize();
+bool Game::initialize(unsigned int seed) {
+    auto result = GameBootstrap::initialize(seed);
     if (!result.success) {
         LOG_ERROR("Game initialization failed: " + result.error_message);
         return false;

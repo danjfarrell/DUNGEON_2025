@@ -8,11 +8,23 @@
 
 int main(int argc, char* argv[]) {
     try {
+        
+        // Parse optional --seed argument
+        unsigned int cmd_seed = 0;
+
+        for (int i = 1; i < argc - 1; i++) {
+            if (std::string(argv[i]) == "--seed") {
+                cmd_seed = static_cast<unsigned int>(std::stoul(argv[i + 1]));
+                std::cout << "Using seed from command line: " << cmd_seed << std::endl;
+            }
+        }
+        
+        
         // Create game instance
         Game game;
 
         // Initialize all systems
-        if (!game.initialize()) {
+        if (!game.initialize(cmd_seed)) {
             LOG_ERROR("Failed to initialize game");
             return 1;
         }

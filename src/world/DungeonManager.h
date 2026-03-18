@@ -19,15 +19,20 @@ private:
     std::mt19937 rng;
     int base_map_width;
     int base_map_height;
+    unsigned int master_seed = 0;
 
 public:
-    DungeonManager(int base_width = 80, int base_height = 50)
+    DungeonManager(int base_width = 80, int base_height = 50, unsigned int seed = 0)
         : current_depth(1),
         current_map(nullptr),
         base_map_width(base_width),
         base_map_height(base_height),
-        rng(std::random_device{}()) {
+        master_seed(seed),
+        rng(seed != 0 ? seed : std::random_device{}()) {  // ? seed the manager RNG too
+        //rng(std::random_device{}()) {
     }
+
+    unsigned int get_seed() const { return master_seed; }  // ? ADD: for logging
 
     bool has_level(int depth) const {
         return level_cache.has_level(depth);
@@ -70,7 +75,11 @@ public:
         width = std::min(width, 120);
         height = std::min(height, 80);
 
-        auto new_map = std::make_unique<Map>(width, height, rng());
+        // Each depth gets a unique but deterministic seed derived from master + depth
+        unsigned int depth_seed = master_seed + static_cast<unsigned int>(depth * 1000003);
+        auto new_map = std::make_unique<Map>(width, height, depth_seed);
+
+        //auto new_map = std::make_unique<Map>(width, height, rng());
 
         std::unique_ptr<MapGenerator> generator = choose_generator(depth);
         new_map->generate(*generator);
