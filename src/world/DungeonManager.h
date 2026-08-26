@@ -10,6 +10,8 @@
 #include "../graphics/SpriteManager.h"
 #include <memory>
 #include <random>
+#include <algorithm>
+#include <utility>
 
 class DungeonManager {
 private:
@@ -187,16 +189,38 @@ public:
         if (rooms.empty()) return;
 
         int num_enemies = 3 + (current_depth - 1) * 2;
-        num_enemies = std::min(num_enemies, static_cast<int>(rooms.size()) - 1);
 
         std::vector<std::string> enemy_pool = get_enemy_pool_for_depth(current_depth);
 
-        std::uniform_int_distribution<int> room_dist(1, rooms.size() - 1);
+        if (rooms.size() == 1) {
+            // Single-room levels (e.g. CellularAutomataGenerator registers the
+            // whole cave as ONE Room) can't reserve room[0] for the player and
+            // pick enemy rooms from [1, rooms.size()-1): that range is empty,
+            // so num_enemies collapsed to min(x, 0) == 0 and cave levels never
+            // spawned anything. Scatter enemies across random floor tiles in
+            // the cave instead.
+            auto positions = find_floor_positions(*current_map, rooms[0], num_enemies);
+            for (const auto& pos : positions) {
+                std::uniform_int_distribution<int> enemy_dist(0, static_cast<int>(enemy_pool.size()) - 1);
+                std::string enemy_type = enemy_pool[enemy_dist(rng)];
+
+                Entity enemy = spawner.spawn(enemy_type, pos.first, pos.second);
+                scale_enemy_for_depth(world, enemy, current_depth);
+            }
+            if (cached) {
+                cached->enemies_spawned = true;
+            }
+            return;
+        }
+
+        num_enemies = std::min(num_enemies, static_cast<int>(rooms.size()) - 1);
+
+        std::uniform_int_distribution<int> room_dist(1, static_cast<int>(rooms.size()) - 1);
 
         for (int i = 0; i < num_enemies; i++) {
             const Room& room = rooms[room_dist(rng)];
 
-            std::uniform_int_distribution<int> enemy_dist(0, enemy_pool.size() - 1);
+            std::uniform_int_distribution<int> enemy_dist(0, static_cast<int>(enemy_pool.size()) - 1);
             std::string enemy_type = enemy_pool[enemy_dist(rng)];
 
             Entity enemy = spawner.spawn(enemy_type, room.center_x(), room.center_y());
@@ -253,6 +277,23 @@ private:
         const auto& rooms = map.get_rooms();
         if (rooms.empty()) return;
 
+        if (rooms.size() == 1) {
+            // Single-room levels (cellular-automata caves) register the whole
+            // cave as one Room, so rooms[0] and rooms.back() are the *same*
+            // room. Placing up-stairs then down-stairs both at its center()
+            // put them on the identical tile, and the down-stairs write
+            // silently clobbered the up-stairs. Use two distinct floor tiles.
+            auto positions = find_floor_positions(map, rooms[0], 2);
+            if (positions.empty()) return;
+
+            if (depth > 1) {
+                map.set_tile(positions[0].first, positions[0].second, TileType::STAIRS_UP);
+            }
+            const auto& down_pos = positions.size() > 1 ? positions[1] : positions[0];
+            map.set_tile(down_pos.first, down_pos.second, TileType::STAIRS_DOWN);
+            return;
+        }
+
         // Always place up-stairs (even on depth 1 for consistency)
         const Room& first_room = rooms[0];
         if (depth > 1) {
@@ -264,6 +305,33 @@ private:
         const Room& last_room = rooms[rooms.size() - 1];
         map.set_tile(last_room.center_x(), last_room.center_y(),
             TileType::STAIRS_DOWN);
+    }
+
+    // Collect up to `count` distinct FLOOR tile positions inside a room's
+    // bounding box, in random order. Used for single-room (cave) levels where
+    // there's no second room to draw a position from.
+    std::vector<std::pair<int, int>> find_floor_positions(Map& map, const Room& room, int count) {
+        std::vector<std::pair<int, int>> candidates;
+        if (count <= 0) return candidates;
+
+        int x_start = std::max(0, room.x);
+        int y_start = std::max(0, room.y);
+        int x_end = std::min(map.get_width(), room.x + room.width);
+        int y_end = std::min(map.get_height(), room.y + room.height);
+
+        for (int y = y_start; y < y_end; y++) {
+            for (int x = x_start; x < x_end; x++) {
+                if (map.get_tile(x, y) == TileType::FLOOR) {
+                    candidates.emplace_back(x, y);
+                }
+            }
+        }
+
+        std::shuffle(candidates.begin(), candidates.end(), rng);
+        if (static_cast<int>(candidates.size()) > count) {
+            candidates.resize(count);
+        }
+        return candidates;
     }
 
     std::vector<std::string> get_enemy_pool_for_depth(int depth) {

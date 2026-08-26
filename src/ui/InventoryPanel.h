@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <algorithm>
 #include "../ecs/World.h"
 #include "../components/Components.h"
 #include "../components/Equipment.h"  // We'll create this next
@@ -71,6 +72,21 @@ public:
     void show() { visible = true; }
     void hide() { visible = false; }
     bool is_visible() const { return visible; }
+
+    // Keyboard navigation of the item grid (the panel used to render a
+    // selection highlight for `selected_slot` but nothing ever moved it —
+    // InputController swallowed all input except ESC/I while the panel was
+    // open, so "Arrow keys to select | Enter to use/equip" did nothing).
+    int get_selected_slot() const { return selected_slot; }
+
+    void move_selection(int dx, int dy) {
+        int col = (selected_slot >= 0) ? (selected_slot % inventory_columns) : 0;
+        int row = (selected_slot >= 0) ? (selected_slot / inventory_columns) : 0;
+        col = std::clamp(col + dx, 0, inventory_columns - 1);
+        row = std::clamp(row + dy, 0, inventory_rows - 1);
+        selected_slot = row * inventory_columns + col;
+        selecting_equipment = false;
+    }
     
     void render(Entity player) {
         if (!visible || !font) return;

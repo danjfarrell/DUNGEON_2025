@@ -43,7 +43,11 @@ Game::Game()
 
 Game::~Game() {
     LOG_INFO("=== Game shutting down ===");
-    delete tile_vis;   // Only raw pointer we own directly
+    // tile_vis is a non-owning alias into World's std::unique_ptr<TileVisibility>
+    // (see World::tile_visibility). World owns the object and frees it in its own
+    // destructor, so do NOT delete it here â€” doing so caused a double free on every
+    // clean exit (and after every level transition, since rebuild_tile_visibility()
+    // used to replace it via raw new/delete behind World's back too).
 }
 
 // ============================================================================
@@ -152,13 +156,17 @@ void Game::run() {
 void Game::update() {
     // Level transitions (checks stair trigger internally)
     if (level_transition->check_and_execute(current_map, tile_vis)) {
-        // Pointers updated in-place — nothing else to do here
+        // Pointers updated in-place ï¿½ nothing else to do here
     }
 
     // Enemy turns
     if (turn_manager->is_enemy_turn()) {
         turn_manager->process_turn(*world);
         world->update(0.016f);
+        if (magic_system) {
+            // Regenerate mana exactly once per completed turn (see MagicSystem::update).
+            magic_system->regenerate_mana(world->get_component_manager());
+        }
         turn_manager->end_enemy_turn();
     }
 
@@ -181,7 +189,7 @@ void Game::render() {
     SDL_RenderClear(sdl_renderer);
 
     hud_renderer->render_backgrounds();
-    world->update(0.016f);          // Always render — map-disappear bug is fixed
+    world->update(0.016f);          // Always render ï¿½ map-disappear bug is fixed
     hud_renderer->render_elements();
 
     SDL_RenderPresent(sdl_renderer);
