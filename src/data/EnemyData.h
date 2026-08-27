@@ -45,6 +45,7 @@ struct EnemyStats {
     int attack = 0;
     int defense = 0;
     int speed = 0;
+    float poison_chance = 0.0f;  // chance per hit (0..1) to poison the defender; optional
 };
 
 // Complete enemy definition
@@ -92,6 +93,7 @@ public:
                 def.stats.attack = enemy_json["stats"]["attack"];
                 def.stats.defense = enemy_json["stats"]["defense"];
                 def.stats.speed = enemy_json["stats"]["speed"];
+                def.stats.poison_chance = enemy_json["stats"].value("poison_chance", 0.0f);
 
                 // Parse AI type
                 def.ai_type = enemy_json["ai"];

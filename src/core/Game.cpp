@@ -20,6 +20,7 @@
 #include "../systems/ConsumableSystem.h"
 #include "../systems/InputController.h"
 #include "../systems/LevelTransitionSystem.h"   // Phase 4
+#include "../systems/StatusEffectSystem.h"
 #include "../ui/MessageLog.h"
 #include "../ui/UILayout.h"
 #include "../ui/Minimap.h"
@@ -113,6 +114,10 @@ bool Game::initialize(unsigned int seed) {
     );
     level_transition->set_hud_renderer(hud_renderer.get());
 
+    // Not registered with World (see StatusEffectSystem.h for why) --
+    // ticked explicitly from update()'s per-turn block instead.
+    status_effect_system = std::make_unique<StatusEffectSystem>(message_log.get());
+
     LOG_INFO("=== Game initialization complete ===");
     return true;
 }
@@ -184,6 +189,11 @@ void Game::update() {
         if (magic_system) {
             // Regenerate mana exactly once per completed turn (see MagicSystem::update).
             magic_system->regenerate_mana(world->get_component_manager());
+        }
+        if (status_effect_system) {
+            // Poison damage / haste expiry, once per completed turn -- same
+            // reasoning as mana regen above (see StatusEffectSystem.h).
+            status_effect_system->process_turn(world->get_component_manager());
         }
         turn_manager->end_enemy_turn();
     }

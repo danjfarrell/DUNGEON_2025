@@ -7,6 +7,7 @@
 #include "../magic/SpellDatabase.h"
 #include "../ui/MessageLog.h"
 #include "../world/Map.h"
+#include "StatusEffectHelpers.h"
 #include <cmath>
 
 class MagicSystem : public System {
@@ -192,6 +193,16 @@ private:
     
     void cast_utility_spell(ComponentManager& components, Entity caster,
                            const Spell* spell) {
+        // Only "haste" has a real mechanical effect so far; detect_enemies/
+        // blink/stone_skin remain message-only placeholders (Phase 3 work).
+        if (spell->id == "haste") {
+            StatusEffects::apply_haste(components, caster);
+            if (message_log) {
+                message_log->add_success("You feel incredibly fast!");
+            }
+            return;
+        }
+
         if (message_log) {
             message_log->add_info(spell->name + " effect!");
         }

@@ -248,7 +248,7 @@ bool GameBootstrap::init_managers(
     if (seed == 0) {
         seed = std::random_device{}();
     }
-    // Log it — this is how players can replay a run
+    // Log it ï¿½ this is how players can replay a run
     LOG_INFO("=== GAME SEED: " + std::to_string(seed) + " ===");
     LOG_INFO("    Replay with: --seed " + std::to_string(seed));
 
@@ -375,6 +375,10 @@ bool GameBootstrap::init_world(
     magic_system = world->add_system<MagicSystem>(message_log.get(), current_map);
     consumable_system = world->add_system<ConsumableSystem>(message_log.get());
 
+    // xp_system was constructed before magic_system existed; wire it in now
+    // so level-ups can grant spells (see ExperienceSystem::grant_level_up_spell).
+    xp_system->set_magic_system(magic_system);
+
     // AI and gameplay systems
     world->add_system<AISystem>(current_map, combat_system);
     world->add_system<ItemPickupSystem>(message_log.get());
@@ -479,6 +483,9 @@ void GameBootstrap::init_player(
 
     // Initialize player spells
     GameInitializer::init_player_spells(player, *world, magic_system);
+
+    // Equip starting gear
+    GameInitializer::init_player_equipment(player, *world);
 
     // Set camera and visibility
     camera->center_on(spawn_pos.x, spawn_pos.y);

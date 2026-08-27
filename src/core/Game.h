@@ -37,6 +37,7 @@ class RenderSystem;
 class InputController;
 class HudRenderer;
 class LevelTransitionSystem;
+class StatusEffectSystem;
 
 // ============================================================================
 // Game Class - Main game coordinator (Simplified)
@@ -114,6 +115,7 @@ private:
     std::unique_ptr<InputController> input_controller;
     std::unique_ptr<HudRenderer>     hud_renderer;    // Phase 3
     std::unique_ptr<LevelTransitionSystem> level_transition;       // Phase 4
+    std::unique_ptr<StatusEffectSystem> status_effect_system;      // Roadmap Phase 2
 
     // Game state
     bool running = false;

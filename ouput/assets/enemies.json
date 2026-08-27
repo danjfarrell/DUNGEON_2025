@@ -7,7 +7,8 @@
         "hp": 8,
         "attack": 2,
         "defense": 0,
-        "speed": 100
+        "speed": 100,
+        "poison_chance": 0.25
       },
       "ai": "aggressive",
       "xp_reward": 10,
@@ -22,6 +23,11 @@
             "item_type": "health_potion",
             "quantity": 1,
             "chance": 0.15
+          },
+          {
+            "item_type": "rusty_dagger",
+            "quantity": 1,
+            "chance": 0.10
           }
         ]
       }
@@ -53,6 +59,16 @@
             "item_type": "mana_potion",
             "quantity": 1,
             "chance": 0.15
+          },
+          {
+            "item_type": "wooden_shield",
+            "quantity": 1,
+            "chance": 0.12
+          },
+          {
+            "item_type": "iron_ring",
+            "quantity": 1,
+            "chance": 0.08
           }
         ]
       }
@@ -89,6 +105,21 @@
             "item_type": "greater_health_potion",
             "quantity": 1,
             "chance": 0.10
+          },
+          {
+            "item_type": "leather_armor",
+            "quantity": 1,
+            "chance": 0.15
+          },
+          {
+            "item_type": "steel_sword",
+            "quantity": 1,
+            "chance": 0.12
+          },
+          {
+            "item_type": "chainmail",
+            "quantity": 1,
+            "chance": 0.06
           }
         ]
       }

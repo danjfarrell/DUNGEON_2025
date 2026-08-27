@@ -7,6 +7,8 @@
 #include "../ui/MessageLog.h"
 #include "../graphics/SpriteManager.h"
 #include "../data/EnemyData.h"
+#include "../data/EquipmentDatabase.h"
+#include "StatusEffectHelpers.h"
 #include "ExperienceSystem.h"  // ADD THIS
 #include <algorithm>
 #include <random>
@@ -22,6 +24,7 @@ private:
     EnemyDataManager* enemy_data;  // NEW!
     ExperienceSystem* xp_system;  // Now this is recognized
     std::mt19937 rng;  // NEW: For random gold amounts
+    EquipmentDatabase equipment_db;  // hardcoded catalog, see EquipmentDatabase.h
 
 public:
     CombatSystem(MessageLog* log, World* w, SpriteManager* sm, EnemyDataManager* ed, ExperienceSystem* xp)
@@ -57,6 +60,25 @@ public:
 
         std::string attacker_str = attacker_name ? attacker_name->name : "Something";
         std::string defender_str = defender_name ? defender_name->name : "something";
+
+        // Poison on hit: data-driven per enemy type (EnemyStats::poison_chance,
+        // 0 by default -- only "rat" has one set right now). No point poisoning
+        // a corpse, so only rolls if the defender survived this hit.
+        if (defender_stats->is_alive() && enemy_data) {
+            EnemyType* attacker_type = components.get_component<EnemyType>(attacker);
+            if (attacker_type) {
+                const EnemyDefinition* def = enemy_data->get_enemy(attacker_type->enemy_id);
+                if (def && def->stats.poison_chance > 0.0f) {
+                    std::uniform_real_distribution<float> chance_dist(0.0f, 1.0f);
+                    if (chance_dist(rng) < def->stats.poison_chance) {
+                        StatusEffects::apply_poison(components, defender);
+                        if (message_log) {
+                            message_log->add_warning(defender_str + " is poisoned!");
+                        }
+                    }
+                }
+            }
+        }
 
         // Combat message
         if (message_log) {
@@ -195,8 +217,13 @@ private:
     void spawn_item(int x, int y, const std::string& item_type, int quantity) {
         Entity item = world->create_entity();
         world->add_component(item, Position{ x, y });
-        world->add_component(item, Name{ item_type });
+
+        const EquipmentDefinition* eq_def = equipment_db.get_item(item_type);
+        world->add_component(item, Name{ eq_def ? eq_def->display_name : item_type });
         world->add_component(item, Item{ item_type, quantity });
+        if (eq_def) {
+            world->add_component(item, eq_def->item);
+        }
 
         std::string sprite_name = "item." + item_type;
         if (sprite_manager->has_sprite(sprite_name)) {
