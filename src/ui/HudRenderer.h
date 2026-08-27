@@ -5,6 +5,8 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <string>
 #include "../ecs/Entity.h"
 
 // Forward declarations
@@ -22,7 +24,7 @@ class MessageLog;
 // Single Responsibility: Draw UI panels, backgrounds, and overlay widgets
 // Extracted from Game class to reduce God-object complexity
 //
-// Does NOT own any of the UI components — it only borrows pointers.
+// Does NOT own any of the UI components ï¿½ it only borrows pointers.
 // Ownership remains with Game (via unique_ptr members).
 // ============================================================================
 
@@ -37,7 +39,9 @@ public:
         InventoryPanel* inventory_panel,
         HealthBar* health_bar,
         MessageLog* message_log,
-        Entity player
+        Entity player,
+        TTF_Font* title_font,
+        TTF_Font* ui_font
     );
 
     // ----------------------------------------
@@ -49,6 +53,10 @@ public:
 
     // Draw all HUD elements on top of the game world
     void render_elements();
+
+    // Full-screen game-over / victory overlay, drawn on top of everything
+    // else once the run has ended (see Game::GameState).
+    void render_end_screen(bool victory);
 
     // ----------------------------------------
     // Update player reference (e.g. after level transition)
@@ -66,10 +74,13 @@ private:
     HealthBar* health_bar;
     MessageLog* message_log;
     Entity player;
+    TTF_Font* title_font;
+    TTF_Font* ui_font;
 
     // Internal helpers
     void render_top_bar_background();
     void render_minimap_background();
     void render_message_log_background();
     void render_hotbar_background();
+    void render_text_centered(TTF_Font* font, const std::string& text, int center_x, int y, SDL_Color color);
 };

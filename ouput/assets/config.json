@@ -22,7 +22,8 @@
     "player_starting_hp": 30,
     "player_starting_mp": 50,
     "player_vision_range": 10,
-    "target_fps": 60.0
+    "target_fps": 60.0,
+    "victory_depth": 10
   },
   "ui_layout": {
     "top_bar_height": 80,

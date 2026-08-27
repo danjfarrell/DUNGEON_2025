@@ -19,18 +19,23 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        
-        // Create game instance
-        Game game;
 
-        // Initialize all systems
-        if (!game.initialize(cmd_seed)) {
-            LOG_ERROR("Failed to initialize game");
-            return 1;
+        // Loop so the player can restart after death/victory without
+        // relaunching the executable. Each iteration is a fresh Game, torn
+        // down and rebuilt through the same initialize()/run() path as a
+        // normal launch, so restart carries no more risk than a cold start.
+        bool play_again = true;
+        while (play_again) {
+            Game game;
+
+            if (!game.initialize(cmd_seed)) {
+                LOG_ERROR("Failed to initialize game");
+                return 1;
+            }
+
+            game.run();
+            play_again = game.should_restart();
         }
-
-        // Run main game loop
-        game.run();
 
         // Clean exit
         return 0;

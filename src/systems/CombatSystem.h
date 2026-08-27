@@ -7,6 +7,8 @@
 #include "../ui/MessageLog.h"
 #include "../graphics/SpriteManager.h"
 #include "../data/EnemyData.h"
+#include "../data/EquipmentDatabase.h"
+#include "StatusEffectHelpers.h"
 #include "ExperienceSystem.h"  // ADD THIS
 #include <algorithm>
 #include <random>
@@ -22,6 +24,7 @@ private:
     EnemyDataManager* enemy_data;  // NEW!
     ExperienceSystem* xp_system;  // Now this is recognized
     std::mt19937 rng;  // NEW: For random gold amounts
+    EquipmentDatabase equipment_db;  // hardcoded catalog, see EquipmentDatabase.h
 
 public:
     CombatSystem(MessageLog* log, World* w, SpriteManager* sm, EnemyDataManager* ed, ExperienceSystem* xp)
@@ -50,19 +53,32 @@ public:
         // Calculate damage: attack - defense, minimum 1
         int damage = std::max(1, attacker_stats->attack - defender_stats->defense);
         defender_stats->take_damage(damage);
-        // After applying damage to defender_stats, add:
-        Health* defender_health = components.get_component<Health>(defender);
-        if (defender_health) {
-            defender_health->current = defender_stats->current_hp;
-            // Keep maximum in sync too in case it was scaled
-            defender_health->maximum = defender_stats->max_hp;
-        }
+
         // Get names for combat message
         Name* attacker_name = components.get_component<Name>(attacker);
         Name* defender_name = components.get_component<Name>(defender);
 
         std::string attacker_str = attacker_name ? attacker_name->name : "Something";
         std::string defender_str = defender_name ? defender_name->name : "something";
+
+        // Poison on hit: data-driven per enemy type (EnemyStats::poison_chance,
+        // 0 by default -- only "rat" has one set right now). No point poisoning
+        // a corpse, so only rolls if the defender survived this hit.
+        if (defender_stats->is_alive() && enemy_data) {
+            EnemyType* attacker_type = components.get_component<EnemyType>(attacker);
+            if (attacker_type) {
+                const EnemyDefinition* def = enemy_data->get_enemy(attacker_type->enemy_id);
+                if (def && def->stats.poison_chance > 0.0f) {
+                    std::uniform_real_distribution<float> chance_dist(0.0f, 1.0f);
+                    if (chance_dist(rng) < def->stats.poison_chance) {
+                        StatusEffects::apply_poison(components, defender);
+                        if (message_log) {
+                            message_log->add_warning(defender_str + " is poisoned!");
+                        }
+                    }
+                }
+            }
+        }
 
         // Combat message
         if (message_log) {
@@ -86,6 +102,19 @@ public:
 
     // Mark entity as dead and spawn loot
     void handle_death(ComponentManager& components, Entity entity, Entity killer) {
+        // Tag as dead either way: DeathSystem reacts to this for enemy corpse
+        // visuals, and Game::update() reacts to it on the player to switch to
+        // the GAME_OVER state.
+        components.add_component(entity, Dead{});
+
+        if (components.has_component<PlayerControlled>(entity)) {
+            // The player isn't a corpse to sweep off the map. Leave their
+            // Position/Renderable/etc. alone (unlike the enemy cleanup below)
+            // so the game-over screen can still show where they fell, and so
+            // Game::update() can keep reading their CombatStats.
+            return;
+        }
+
         // IMPORTANT: Copy position VALUES, not pointer!
         int death_x = -1;
         int death_y = -1;
@@ -98,9 +127,6 @@ public:
         // Check if this is an enemy with loot data
         EnemyType* enemy_type = components.get_component<EnemyType>(entity);
         Name* entity_name = components.get_component<Name>(entity);
-
-        // Add Dead tag
-        components.add_component(entity, Dead{});
 
         // IMPORTANT: Completely remove entity from map to fix corpse bug
         if (components.has_component<BlocksMovement>(entity)) {
@@ -191,8 +217,13 @@ private:
     void spawn_item(int x, int y, const std::string& item_type, int quantity) {
         Entity item = world->create_entity();
         world->add_component(item, Position{ x, y });
-        world->add_component(item, Name{ item_type });
+
+        const EquipmentDefinition* eq_def = equipment_db.get_item(item_type);
+        world->add_component(item, Name{ eq_def ? eq_def->display_name : item_type });
         world->add_component(item, Item{ item_type, quantity });
+        if (eq_def) {
+            world->add_component(item, eq_def->item);
+        }
 
         std::string sprite_name = "item." + item_type;
         if (sprite_manager->has_sprite(sprite_name)) {

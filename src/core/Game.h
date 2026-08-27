@@ -37,6 +37,7 @@ class RenderSystem;
 class InputController;
 class HudRenderer;
 class LevelTransitionSystem;
+class StatusEffectSystem;
 
 // ============================================================================
 // Game Class - Main game coordinator (Simplified)
@@ -61,6 +62,11 @@ public:
 
     // Main game loop
     void run();
+
+    // True once the player has chosen to play again from the game-over /
+    // victory screen. main() checks this after run() returns to decide
+    // whether to construct a fresh Game and go again.
+    bool should_restart() const { return wants_restart; }
 
 private:
     // ========================================
@@ -109,10 +115,17 @@ private:
     std::unique_ptr<InputController> input_controller;
     std::unique_ptr<HudRenderer>     hud_renderer;    // Phase 3
     std::unique_ptr<LevelTransitionSystem> level_transition;       // Phase 4
+    std::unique_ptr<StatusEffectSystem> status_effect_system;      // Roadmap Phase 2
 
     // Game state
     bool running = false;
     TileVisibility* tile_vis = nullptr;
+
+    // Whether the run is still in progress, lost, or won. Gates the normal
+    // update loop and switches input handling in run() to just restart/quit.
+    enum class GameState { PLAYING, GAME_OVER, VICTORY };
+    GameState state = GameState::PLAYING;
+    bool wants_restart = false;
 
     // ========================================
     // Game Loop Methods

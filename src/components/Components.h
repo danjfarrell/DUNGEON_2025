@@ -71,16 +71,6 @@ struct Facing {
     }
 };
 
-// Health points
-struct Health {
-    int current;
-    int maximum;
-
-    Health(int current = 10, int maximum = 10)
-        : current(current), maximum(maximum) {
-    }
-};
-
 // AI behavior
 struct AI {
     enum Type { AGGRESSIVE, DEFENSIVE, PATROL, IDLE };
@@ -161,6 +151,29 @@ struct Energy {
 // Tag: This entity is dead and should be removed
 struct Dead {
     // Tag component
+};
+
+// Status effect: deals damage_per_turn each turn until turns_remaining hits 0.
+// Ticked by StatusEffectSystem::process_turn() -- see StatusEffectHelpers.h
+// for how it gets applied.
+struct Poisoned {
+    int damage_per_turn;
+    int turns_remaining;
+
+    Poisoned(int dmg = 2, int turns = 3)
+        : damage_per_turn(dmg), turns_remaining(turns) {
+    }
+};
+
+// Status effect: Energy::speed is boosted while active and restored to
+// original_speed when turns_remaining hits 0 (see StatusEffectHelpers.h).
+struct Hasted {
+    int original_speed;
+    int turns_remaining;
+
+    Hasted(int orig_speed = 100, int turns = 5)
+        : original_speed(orig_speed), turns_remaining(turns) {
+    }
 };
 
 // Marks entities that need to act this turn (for AI)

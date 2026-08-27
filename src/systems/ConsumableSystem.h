@@ -4,6 +4,7 @@
 #include "../ecs/System.h"
 #include "../components/Components.h"
 #include "../ui/MessageLog.h"
+#include "StatusEffectHelpers.h"
 
 // Consumable effect types
 enum class ConsumableEffect {
@@ -206,19 +207,30 @@ private:
             break;
         }
 
-        case ConsumableEffect::CURE_POISON:
-            // TODO: Implement status effects first
-            if (message_log) {
-                message_log->add_info("You feel refreshed.");
+        case ConsumableEffect::CURE_POISON: {
+            if (components.has_component<Poisoned>(target)) {
+                components.remove_component<Poisoned>(target);
+                if (message_log) {
+                    message_log->add_success("The poison is cleansed from your body!");
+                }
+                return true;
             }
-            return true;
+            if (message_log) {
+                message_log->add_info("You aren't poisoned.");
+            }
+            return false;  // nothing to cure -- don't consume the potion
+        }
 
-        case ConsumableEffect::GRANT_HASTE:
-            // TODO: Implement status effects first
+        case ConsumableEffect::GRANT_HASTE: {
+            if (!components.has_component<Energy>(target)) {
+                return false;
+            }
+            StatusEffects::apply_haste(components, target);
             if (message_log) {
-                message_log->add_info("You feel faster!");
+                message_log->add_success("You feel incredibly fast!");
             }
             return true;
+        }
         }
 
         return false;

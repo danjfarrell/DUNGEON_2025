@@ -5,6 +5,7 @@
 #include "../config/GameConfig.h"
 #include "../graphics/SpriteManager.h"
 #include "../data/EnemyData.h"
+#include "../data/EquipmentDatabase.h"
 #include "../world/DungeonManager.h"
 #include "../ui/MessageLog.h"
 #include "../ui/UILayout.h"
@@ -97,10 +98,10 @@ public:
             1,  // defense
             config.gameplay.player_starting_hp
             });
-        world.add_component(player, Health{
-            config.gameplay.player_starting_hp,
-            config.gameplay.player_starting_hp
-            });
+        // Note: no separate Health component. CombatStats.current_hp/max_hp is
+        // the single source of truth for HP (combat, potions, and spells all
+        // mutate it) — a duplicate Health component used to exist and drift
+        // out of sync with it; see CLAUDE.md.
 
         // Progression
         world.add_component(player, Energy{ 100 });
@@ -137,6 +138,28 @@ public:
             spellbook->equip_to_slot(0, 0);  // Magic Missile in slot 1
             spellbook->equip_to_slot(1, 1);  // Minor Heal in slot 2
             LOG_INFO("Starting spells equipped");
+        }
+    }
+
+    // Give the player a starting weapon, already equipped, so the equip
+    // system (mechanism + UI) has something to show/verify without needing
+    // a lucky loot drop first. See EquipmentDatabase.h for the catalog.
+    static void init_player_equipment(Entity player, World& world) {
+        LOG_INFO("=== Equipping Starting Gear ===");
+
+        static const EquipmentDatabase equipment_db;
+        const EquipmentDefinition* dagger = equipment_db.get_item("rusty_dagger");
+        if (!dagger) return;
+
+        Entity weapon = world.create_entity();
+        world.add_component(weapon, Name{ dagger->display_name });
+        world.add_component(weapon, Item{ "rusty_dagger", 1 });
+        world.add_component(weapon, dagger->item);
+
+        Equipment* equipment = world.get_component<Equipment>(player);
+        if (equipment) {
+            equipment->equip(dagger->item.slot, weapon);
+            LOG_INFO("Equipped starting weapon: " + dagger->display_name);
         }
     }
 
