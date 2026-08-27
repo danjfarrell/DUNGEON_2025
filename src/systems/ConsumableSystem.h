@@ -48,6 +48,9 @@ public:
         Item* item = components.get_component<Item>(item_entity);
         if (!item) return false;
 
+        // An already-depleted item should never apply its effect again.
+        if (item->quantity <= 0) return false;
+
         // Look up consumable data
         auto it = consumables.find(item->item_type);
         if (it == consumables.end()) {

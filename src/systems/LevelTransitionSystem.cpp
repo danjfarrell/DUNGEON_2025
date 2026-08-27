@@ -53,7 +53,7 @@ LevelTransitionSystem::LevelTransitionSystem(
 }
 
 // ============================================================================
-// check_and_execute — call once per frame from Game::update()
+// check_and_execute ï¿½ call once per frame from Game::update()
 // ============================================================================
 
 bool LevelTransitionSystem::check_and_execute(Map*& out_map, TileVisibility*& out_vis) {
@@ -76,7 +76,7 @@ bool LevelTransitionSystem::check_and_execute(Map*& out_map, TileVisibility*& ou
 }
 
 // ============================================================================
-// execute_transition — the full level change sequence
+// execute_transition ï¿½ the full level change sequence
 // ============================================================================
 
 void LevelTransitionSystem::execute_transition(bool descending, Map*& out_map, TileVisibility*& out_vis) {
@@ -148,7 +148,7 @@ void LevelTransitionSystem::execute_transition(bool descending, Map*& out_map, T
 }
 
 // ============================================================================
-// update_all_map_pointers — notify every system that holds a Map*
+// update_all_map_pointers ï¿½ notify every system that holds a Map*
 // ============================================================================
 
 void LevelTransitionSystem::update_all_map_pointers(Map* new_map) {
@@ -163,15 +163,19 @@ void LevelTransitionSystem::update_all_map_pointers(Map* new_map) {
 }
 
 // ============================================================================
-// rebuild_tile_visibility — create fresh visibility for new map dimensions
+// rebuild_tile_visibility ï¿½ create fresh visibility for new map dimensions
 // ============================================================================
 
 void LevelTransitionSystem::rebuild_tile_visibility(Map* new_map, TileVisibility*& out_vis) {
-    // TileVisibility is owned by World/GameBootstrap and stored as a raw ptr in Game.
-    // We replace the object in-place by deleting the old one and allocating a new one.
-    // Game must update its tile_vis pointer from our out_vis after this call.
-    delete out_vis;
-    out_vis = new TileVisibility(new_map->get_width(), new_map->get_height());
+    // TileVisibility is owned by World via std::unique_ptr<TileVisibility>.
+    // Hand World the new instance through set_tile_visibility() so its unique_ptr
+    // destroys the old one (safely, exactly once) as part of the assignment, then
+    // take a fresh non-owning view for Game/other systems to hold.
+    // (Previously this did `delete out_vis; out_vis = new TileVisibility(...)`
+    // directly on the raw alias, which left World's unique_ptr dangling at the
+    // freed old object â€” a double free later in Game::~Game() / World::~World().)
+    world->set_tile_visibility(std::make_unique<TileVisibility>(new_map->get_width(), new_map->get_height()));
+    out_vis = world->get_tile_visibility();
 
     // Also update render systems with new visibility pointer
     if (map_render_system) map_render_system->set_tile_visibility(out_vis);
@@ -183,7 +187,7 @@ void LevelTransitionSystem::rebuild_tile_visibility(Map* new_map, TileVisibility
 }
 
 // ============================================================================
-// reposition_player_fov — update camera and compute initial FOV
+// reposition_player_fov ï¿½ update camera and compute initial FOV
 // ============================================================================
 
 void LevelTransitionSystem::reposition_player_fov(Map* new_map, TileVisibility* vis) {

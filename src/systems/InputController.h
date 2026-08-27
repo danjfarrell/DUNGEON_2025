@@ -84,6 +84,10 @@ private:
     void handle_minimap_toggle(const SDL_Event& event);
     void handle_player_movement(const SDL_Event& event, InputResult& result);
 
+    // Arrow keys / Enter while the inventory panel is open (selection + use/equip)
+    void handle_inventory_input(const SDL_Event& event, InputResult& result);
+    void use_or_equip_selected(InputResult& result);
+
     // Helper
     bool use_consumable(int slot);
 };

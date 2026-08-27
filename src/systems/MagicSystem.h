@@ -20,9 +20,19 @@ public:
         : message_log(log), game_map(map) {}
     
     void update(ComponentManager& components, float dt) override {
+        // Mana regen is per-TURN (see Mana::regen_per_turn), not per rendered frame.
+        // World::update() is called every render frame (Game::render()) as well as
+        // once per turn (Game::update()), so regenerating here made mana refill up
+        // to ~60x too fast. Regeneration now happens explicitly via
+        // regenerate_mana(), called exactly once per turn from Game::update().
+    }
+
+    // Called once per turn (from Game::update(), when the enemy turn finishes)
+    // rather than every render frame.
+    void regenerate_mana(ComponentManager& components) {
         auto* mana_components = components.get_array<Mana>();
         if (!mana_components) return;
-        
+
         auto& mana_data = mana_components->get_components();
         for (auto& mana : mana_data) {
             mana.regenerate();

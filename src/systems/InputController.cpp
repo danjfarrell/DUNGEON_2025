@@ -16,6 +16,30 @@
 #include "../ui/MessageLog.h"
 #include "../config/GameConfig.h"
 #include "../components/Components.h"
+#include "../components/Equipment.h"
+
+namespace {
+    // Apply (sign = +1) or remove (sign = -1) an equippable item's stat
+    // bonuses to/from the wearer's stats.
+    void apply_equipment_stats(CombatStats* combat, Mana* mana, const ItemStats& stats, int sign) {
+        if (combat) {
+            combat->attack += sign * stats.attack_bonus;
+            combat->defense += sign * stats.defense_bonus;
+            combat->max_hp += sign * stats.hp_bonus;
+            if (combat->max_hp < 1) combat->max_hp = 1;
+            if (combat->current_hp > combat->max_hp) combat->current_hp = combat->max_hp;
+        }
+        if (mana && stats.mana_bonus != 0) {
+            mana->maximum += sign * stats.mana_bonus;
+            if (mana->maximum < 0) mana->maximum = 0;
+            if (mana->current > mana->maximum) mana->current = mana->maximum;
+        }
+        // speed_bonus isn't applied: Energy::speed drives turn cadence and
+        // there's no existing precedent in this codebase for equipment
+        // touching it safely (e.g. mid-turn changes), so it's left as a TODO
+        // rather than risking new turn-order bugs.
+    }
+}
 
 InputController::InputController(
     World* world,
@@ -77,8 +101,10 @@ InputController::InputResult InputController::handle_event(const SDL_Event& even
         return result;
     }
 
-    // Skip game input if inventory is open
+    // Inventory panel input: arrow keys move the selection, Enter uses/equips it.
+    // (ESC/I above already work regardless of visibility.)
     if (inventory_panel->is_visible()) {
+        handle_inventory_input(event, result);
         return result;
     }
 
@@ -203,7 +229,7 @@ void InputController::handle_player_movement(const SDL_Event& event, InputResult
                     //    enemy_pos->x == new_x && enemy_pos->y == new_y &&
                     //    health->current > 0) {
 
-                    // AFTER � check CombatStats and BlocksMovement instead
+                    // AFTER � check CombatStats and BlocksMovement instead
                     CombatStats* stats = components.get_component<CombatStats>(entity);
                     bool blocks = components.has_component<BlocksMovement>(entity);
                     if (enemy_pos && stats && blocks &&
@@ -246,6 +272,84 @@ bool InputController::use_consumable(int slot) {
         return false;
     }
 
-    consumable_system->use_item(components, player, inv->items[slot]);
-    return true;
+    // use_from_inventory() (not use_item()) also removes the item from the
+    // inventory and destroys its entity/components once quantity hits 0 —
+    // use_item() alone left depleted items in the inventory forever, letting
+    // a single potion be used infinitely.
+    return consumable_system->use_from_inventory(components, player, slot);
+}
+
+void InputController::handle_inventory_input(const SDL_Event& event, InputResult& result) {
+    switch (event.key.key) {
+    case SDLK_UP:
+        inventory_panel->move_selection(0, -1);
+        break;
+    case SDLK_DOWN:
+        inventory_panel->move_selection(0, 1);
+        break;
+    case SDLK_LEFT:
+        inventory_panel->move_selection(-1, 0);
+        break;
+    case SDLK_RIGHT:
+        inventory_panel->move_selection(1, 0);
+        break;
+    case SDLK_RETURN:
+    case SDLK_KP_ENTER:
+        use_or_equip_selected(result);
+        break;
+    default:
+        break;
+    }
+}
+
+void InputController::use_or_equip_selected(InputResult& result) {
+    auto& components = world->get_component_manager();
+    Inventory* inv = components.get_component<Inventory>(player);
+    if (!inv) return;
+
+    int slot = inventory_panel->get_selected_slot();
+    if (slot < 0 || slot >= static_cast<int>(inv->items.size())) {
+        return;
+    }
+
+    Entity item_entity = inv->items[slot];
+    if (item_entity == Entity(0)) return;
+
+    EquippableItem* equippable = components.get_component<EquippableItem>(item_entity);
+    if (equippable) {
+        Equipment* equipment = components.get_component<Equipment>(player);
+        if (!equipment) return;
+
+        Entity previous = equipment->unequip(equippable->slot);
+        equipment->equip(equippable->slot, item_entity);
+
+        // Swap whatever was equipped before back into the inventory slot the
+        // newly-equipped item came from, or drop the slot if there wasn't one.
+        if (previous != Entity(0)) {
+            inv->items[slot] = previous;
+        } else {
+            inv->items.erase(inv->items.begin() + slot);
+        }
+
+        CombatStats* combat = components.get_component<CombatStats>(player);
+        Mana* mana = components.get_component<Mana>(player);
+        apply_equipment_stats(combat, mana, equippable->stats, +1);
+        if (previous != Entity(0)) {
+            EquippableItem* prev_equippable = components.get_component<EquippableItem>(previous);
+            if (prev_equippable) {
+                apply_equipment_stats(combat, mana, prev_equippable->stats, -1);
+            }
+        }
+
+        if (message_log) {
+            Name* name = components.get_component<Name>(item_entity);
+            message_log->add_success("Equipped " + (name ? name->name : std::string("item")) + ".");
+        }
+        // Equipping is a menu action, not a game action — it doesn't end the turn.
+    } else {
+        // Not equipment: fall back to the same consumable path the hotbar uses.
+        if (consumable_system->use_from_inventory(components, player, slot)) {
+            result.turn_ended = true;
+        }
+    }
 }
