@@ -25,7 +25,9 @@ HudRenderer::HudRenderer(
     InventoryPanel* inventory_panel,
     HealthBar* health_bar,
     MessageLog* message_log,
-    Entity player
+    Entity player,
+    TTF_Font* title_font,
+    TTF_Font* ui_font
 )
     : renderer(renderer),
     ui_layout(ui_layout),
@@ -35,13 +37,15 @@ HudRenderer::HudRenderer(
     inventory_panel(inventory_panel),
     health_bar(health_bar),
     message_log(message_log),
-    player(player)
+    player(player),
+    title_font(title_font),
+    ui_font(ui_font)
 {
     LOG_INFO("HudRenderer initialized");
 }
 
 // ============================================================================
-// render_backgrounds — call before world->update() so panels sit behind world
+// render_backgrounds ï¿½ call before world->update() so panels sit behind world
 // ============================================================================
 
 void HudRenderer::render_backgrounds() {
@@ -52,7 +56,7 @@ void HudRenderer::render_backgrounds() {
 }
 
 // ============================================================================
-// render_elements — call after world->update() so HUD sits on top
+// render_elements ï¿½ call after world->update() so HUD sits on top
 // ============================================================================
 
 void HudRenderer::render_elements() {
@@ -71,11 +75,13 @@ void HudRenderer::render_elements() {
         hotbar->render(player);
     }
 
-    // Health bar — fetch live health data from ECS
+    // Health bar ï¿½ CombatStats is the single source of truth for HP (combat,
+    // potions, and spells all mutate current_hp/max_hp directly; see
+    // CLAUDE.md for why there's no separate Health component to read here).
     if (health_bar && world) {
-        Health* player_health = world->get_component<Health>(player);
-        if (player_health) {
-            health_bar->render(player_health->current, player_health->maximum);
+        CombatStats* player_stats = world->get_component<CombatStats>(player);
+        if (player_stats) {
+            health_bar->render(player_stats->current_hp, player_stats->max_hp);
         }
     }
 
@@ -86,7 +92,55 @@ void HudRenderer::render_elements() {
 }
 
 // ============================================================================
-// Private helpers — panel backgrounds
+// render_end_screen ï¿½ full-screen game-over / victory overlay
+// ============================================================================
+
+void HudRenderer::render_end_screen(bool victory) {
+    if (!ui_layout) return;
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 190);
+    SDL_FRect overlay = {
+        0.0f, 0.0f,
+        static_cast<float>(ui_layout->screen_width),
+        static_cast<float>(ui_layout->screen_height)
+    };
+    SDL_RenderFillRect(renderer, &overlay);
+
+    int center_x = ui_layout->screen_width / 2;
+    int center_y = ui_layout->screen_height / 2;
+
+    SDL_Color headline_color = victory
+        ? SDL_Color{ 255, 215, 0, 255 }
+        : SDL_Color{ 210, 60, 60, 255 };
+    render_text_centered(title_font, victory ? "VICTORY!" : "YOU DIED",
+        center_x, center_y - 40, headline_color);
+    render_text_centered(ui_font, "Press R to play again, or ESC to quit",
+        center_x, center_y + 30, SDL_Color{ 220, 220, 220, 255 });
+}
+
+void HudRenderer::render_text_centered(TTF_Font* font, const std::string& text, int center_x, int y, SDL_Color color) {
+    if (!font) return;
+
+    SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0, color);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture) {
+        SDL_FRect dest = {
+            static_cast<float>(center_x - surface->w / 2),
+            static_cast<float>(y),
+            static_cast<float>(surface->w),
+            static_cast<float>(surface->h)
+        };
+        SDL_RenderTexture(renderer, texture, nullptr, &dest);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_DestroySurface(surface);
+}
+
+// ============================================================================
+// Private helpers ï¿½ panel backgrounds
 // ============================================================================
 
 void HudRenderer::render_top_bar_background() {

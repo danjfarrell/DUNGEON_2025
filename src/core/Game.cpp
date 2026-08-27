@@ -100,7 +100,8 @@ bool Game::initialize(unsigned int seed) {
     hud_renderer = std::make_unique<HudRenderer>(
         resources->renderer.get(), ui_layout.get(), world.get(),
         minimap.get(), hotbar.get(), inventory_panel.get(),
-        health_bar.get(), message_log.get(), player
+        health_bar.get(), message_log.get(), player,
+        resources->title_font.get(), resources->ui_font.get()
     );
 
     // Phase 4: LevelTransitionSystem
@@ -132,6 +133,19 @@ void Game::run() {
 
         // Input
         while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) { running = false; break; }
+
+            if (state != GameState::PLAYING) {
+                // The run has ended — only restart/quit mean anything now.
+                // Route around InputController entirely so movement, spells,
+                // and the inventory panel can't act on a finished run.
+                if (event.type == SDL_EVENT_KEY_DOWN) {
+                    if (event.key.key == SDLK_ESCAPE) { running = false; break; }
+                    if (event.key.key == SDLK_R) { wants_restart = true; running = false; break; }
+                }
+                continue;
+            }
+
             auto result = input_controller->handle_event(event);
             if (result.quit_requested) { running = false; break; }
             if (result.turn_ended) { turn_manager->end_player_turn(); }
@@ -154,6 +168,10 @@ void Game::run() {
 // ============================================================================
 
 void Game::update() {
+    if (state != GameState::PLAYING) {
+        return;  // Frozen on the game-over/victory screen until restart or quit.
+    }
+
     // Level transitions (checks stair trigger internally)
     if (level_transition->check_and_execute(current_map, tile_vis)) {
         // Pointers updated in-place � nothing else to do here
@@ -170,11 +188,25 @@ void Game::update() {
         turn_manager->end_enemy_turn();
     }
 
-    // Player death check
-    Health* hp = world->get_component<Health>(player);
-    if (hp && hp->current <= 0) {
+    // Player death: CombatStats.current_hp is the single source of truth for
+    // HP (see GameInitializer.h) — combat, potions, and spells all mutate it.
+    // CombatSystem::handle_death() tags the player Dead without stripping
+    // their other components, so the death screen can still show where they
+    // fell.
+    CombatStats* stats = world->get_component<CombatStats>(player);
+    if (stats && !stats->is_alive()) {
+        state = GameState::GAME_OVER;
         message_log->add_combat("You have died!");
-        message_log->add_info("Press ESC to quit.");
+        message_log->add_info("Press R to play again, or ESC to quit.");
+        return;
+    }
+
+    // Victory: survive to the configured depth.
+    if (dungeon_manager && dungeon_manager->get_current_depth() >= config.gameplay.victory_depth) {
+        state = GameState::VICTORY;
+        message_log->add_success("You reached depth " +
+            std::to_string(config.gameplay.victory_depth) + " and won!");
+        message_log->add_info("Press R to play again, or ESC to quit.");
     }
 }
 
@@ -191,6 +223,10 @@ void Game::render() {
     hud_renderer->render_backgrounds();
     world->update(0.016f);          // Always render � map-disappear bug is fixed
     hud_renderer->render_elements();
+
+    if (state != GameState::PLAYING) {
+        hud_renderer->render_end_screen(state == GameState::VICTORY);
+    }
 
     SDL_RenderPresent(sdl_renderer);
 }

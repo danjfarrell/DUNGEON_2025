@@ -97,10 +97,10 @@ public:
             1,  // defense
             config.gameplay.player_starting_hp
             });
-        world.add_component(player, Health{
-            config.gameplay.player_starting_hp,
-            config.gameplay.player_starting_hp
-            });
+        // Note: no separate Health component. CombatStats.current_hp/max_hp is
+        // the single source of truth for HP (combat, potions, and spells all
+        // mutate it) — a duplicate Health component used to exist and drift
+        // out of sync with it; see CLAUDE.md.
 
         // Progression
         world.add_component(player, Energy{ 100 });

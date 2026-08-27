@@ -62,6 +62,11 @@ public:
     // Main game loop
     void run();
 
+    // True once the player has chosen to play again from the game-over /
+    // victory screen. main() checks this after run() returns to decide
+    // whether to construct a fresh Game and go again.
+    bool should_restart() const { return wants_restart; }
+
 private:
     // ========================================
     // Member Variables
@@ -113,6 +118,12 @@ private:
     // Game state
     bool running = false;
     TileVisibility* tile_vis = nullptr;
+
+    // Whether the run is still in progress, lost, or won. Gates the normal
+    // update loop and switches input handling in run() to just restart/quit.
+    enum class GameState { PLAYING, GAME_OVER, VICTORY };
+    GameState state = GameState::PLAYING;
+    bool wants_restart = false;
 
     // ========================================
     // Game Loop Methods

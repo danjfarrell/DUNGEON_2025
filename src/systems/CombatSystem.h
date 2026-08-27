@@ -50,13 +50,7 @@ public:
         // Calculate damage: attack - defense, minimum 1
         int damage = std::max(1, attacker_stats->attack - defender_stats->defense);
         defender_stats->take_damage(damage);
-        // After applying damage to defender_stats, add:
-        Health* defender_health = components.get_component<Health>(defender);
-        if (defender_health) {
-            defender_health->current = defender_stats->current_hp;
-            // Keep maximum in sync too in case it was scaled
-            defender_health->maximum = defender_stats->max_hp;
-        }
+
         // Get names for combat message
         Name* attacker_name = components.get_component<Name>(attacker);
         Name* defender_name = components.get_component<Name>(defender);
@@ -86,6 +80,19 @@ public:
 
     // Mark entity as dead and spawn loot
     void handle_death(ComponentManager& components, Entity entity, Entity killer) {
+        // Tag as dead either way: DeathSystem reacts to this for enemy corpse
+        // visuals, and Game::update() reacts to it on the player to switch to
+        // the GAME_OVER state.
+        components.add_component(entity, Dead{});
+
+        if (components.has_component<PlayerControlled>(entity)) {
+            // The player isn't a corpse to sweep off the map. Leave their
+            // Position/Renderable/etc. alone (unlike the enemy cleanup below)
+            // so the game-over screen can still show where they fell, and so
+            // Game::update() can keep reading their CombatStats.
+            return;
+        }
+
         // IMPORTANT: Copy position VALUES, not pointer!
         int death_x = -1;
         int death_y = -1;
@@ -98,9 +105,6 @@ public:
         // Check if this is an enemy with loot data
         EnemyType* enemy_type = components.get_component<EnemyType>(entity);
         Name* entity_name = components.get_component<Name>(entity);
-
-        // Add Dead tag
-        components.add_component(entity, Dead{});
 
         // IMPORTANT: Completely remove entity from map to fix corpse bug
         if (components.has_component<BlocksMovement>(entity)) {

@@ -42,6 +42,7 @@ struct GameConfig {
         int player_vision_range = 10;
         float target_fps = 60.0f;
         unsigned int seed = 0;
+        int victory_depth = 10;  // reach this depth to win
     } gameplay;
     
     // UI Layout percentages (relative to screen size)
@@ -105,6 +106,7 @@ struct GameConfig {
                 gameplay.player_vision_range = g.value("player_vision_range", gameplay.player_vision_range);
                 gameplay.target_fps = g.value("target_fps", gameplay.target_fps);
                 gameplay.seed = g.value("seed", gameplay.seed);
+                gameplay.victory_depth = g.value("victory_depth", gameplay.victory_depth);
             }
             
             // Parse UI layout
@@ -160,7 +162,8 @@ struct GameConfig {
         config["gameplay"]["player_starting_mp"] = gameplay.player_starting_mp;
         config["gameplay"]["player_vision_range"] = gameplay.player_vision_range;
         config["gameplay"]["target_fps"] = gameplay.target_fps;
-        
+        config["gameplay"]["victory_depth"] = gameplay.victory_depth;
+
         // UI Layout
         config["ui_layout"]["top_bar_height"] = ui_layout.top_bar_height;
         config["ui_layout"]["minimap_size"] = ui_layout.minimap_size;

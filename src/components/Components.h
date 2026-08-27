@@ -71,16 +71,6 @@ struct Facing {
     }
 };
 
-// Health points
-struct Health {
-    int current;
-    int maximum;
-
-    Health(int current = 10, int maximum = 10)
-        : current(current), maximum(maximum) {
-    }
-};
-
 // AI behavior
 struct AI {
     enum Type { AGGRESSIVE, DEFENSIVE, PATROL, IDLE };
