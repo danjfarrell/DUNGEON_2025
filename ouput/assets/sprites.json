@@ -80,6 +80,36 @@
       "tile_y": 18,
       "layer": 5
     },
+    "bat.idle": {
+      "sheet_id": 0,
+      "tile_x": 8,
+      "tile_y": 17,
+      "layer": 5
+    },
+    "skeleton_archer.idle": {
+      "sheet_id": 0,
+      "tile_x": 4,
+      "tile_y": 17,
+      "layer": 5
+    },
+    "cave_viper.idle": {
+      "sheet_id": 0,
+      "tile_x": 0,
+      "tile_y": 21,
+      "layer": 5
+    },
+    "imp.idle": {
+      "sheet_id": 0,
+      "tile_x": 8,
+      "tile_y": 19,
+      "layer": 5
+    },
+    "naga_guardian.idle": {
+      "sheet_id": 0,
+      "tile_x": 0,
+      "tile_y": 22,
+      "layer": 5
+    },
     "wall.stone": {
       "sheet_id": 3,
       "tile_x": 1,
@@ -132,6 +162,48 @@
       "sheet_id": 0,
       "tile_x": 12,
       "tile_y": 18,
+      "layer": 3
+    },
+    "item.health_potion": {
+      "sheet_id": 0,
+      "tile_x": 12,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.greater_health_potion": {
+      "sheet_id": 0,
+      "tile_x": 16,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.superior_health_potion": {
+      "sheet_id": 0,
+      "tile_x": 14,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.mana_potion": {
+      "sheet_id": 0,
+      "tile_x": 13,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.greater_mana_potion": {
+      "sheet_id": 0,
+      "tile_x": 13,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.cure_poison_potion": {
+      "sheet_id": 0,
+      "tile_x": 15,
+      "tile_y": 17,
+      "layer": 3
+    },
+    "item.haste_potion": {
+      "sheet_id": 0,
+      "tile_x": 13,
+      "tile_y": 17,
       "layer": 3
     },
     "sword": {

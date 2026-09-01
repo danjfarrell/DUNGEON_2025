@@ -338,13 +338,13 @@ private:
         std::vector<std::string> pool;
 
         if (depth <= 2) {
-            pool = { "rat", "goblin" };
+            pool = { "rat", "rat", "goblin", "bat" };
         }
         else if (depth <= 5) {
-            pool = { "goblin", "goblin", "orc" };
+            pool = { "goblin", "goblin", "orc", "skeleton_archer", "cave_viper" };
         }
         else {
-            pool = { "orc", "goblin", "orc" };
+            pool = { "orc", "orc", "orc", "skeleton_archer", "imp", "naga_guardian" };
         }
 
         return pool;

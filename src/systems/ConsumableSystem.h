@@ -19,11 +19,13 @@ struct ConsumableData {
     ConsumableEffect effect;
     int amount;
     std::string use_message;
+    std::string display_name;
 
     ConsumableData(ConsumableEffect eff = ConsumableEffect::HEAL_HP,
         int amt = 0,
-        const std::string& msg = "")
-        : effect(eff), amount(amt), use_message(msg) {
+        const std::string& msg = "",
+        const std::string& name = "")
+        : effect(eff), amount(amt), use_message(msg), display_name(name) {
     }
 };
 
@@ -121,38 +123,71 @@ public:
         return consumables.find(item_type) != consumables.end();
     }
 
+    // Friendly display name for an item, e.g. for the dropped-item Name
+    // component (falls back to the raw item_type if unknown).
+    std::string get_display_name(const std::string& item_type) const {
+        auto it = consumables.find(item_type);
+        if (it != consumables.end() && !it->second.display_name.empty()) {
+            return it->second.display_name;
+        }
+        return item_type;
+    }
+
 private:
     void initialize_consumables() {
         // Health potions
         consumables["health_potion"] = ConsumableData{
             ConsumableEffect::HEAL_HP,
             25,
-            "You drink a health potion and recover 25 HP."
+            "You drink a health potion and recover 25 HP.",
+            "Health Potion"
         };
 
         consumables["greater_health_potion"] = ConsumableData{
             ConsumableEffect::HEAL_HP,
             50,
-            "You drink a greater health potion and recover 50 HP."
+            "You drink a greater health potion and recover 50 HP.",
+            "Greater Health Potion"
         };
 
         consumables["superior_health_potion"] = ConsumableData{
             ConsumableEffect::HEAL_HP,
             100,
-            "You drink a superior health potion and fully recover!"
+            "You drink a superior health potion and fully recover!",
+            "Superior Health Potion"
         };
 
         // Mana potions
         consumables["mana_potion"] = ConsumableData{
             ConsumableEffect::RESTORE_MANA,
             30,
-            "You drink a mana potion and restore 30 MP."
+            "You drink a mana potion and restore 30 MP.",
+            "Mana Potion"
         };
 
         consumables["greater_mana_potion"] = ConsumableData{
             ConsumableEffect::RESTORE_MANA,
             60,
-            "You drink a greater mana potion and restore 60 MP."
+            "You drink a greater mana potion and restore 60 MP.",
+            "Greater Mana Potion"
+        };
+
+        // Cure-poison and haste were reachable as effects (see apply_effect
+        // below / StatusEffectHelpers) since Phase 2, but had no item type
+        // that actually granted them -- nothing dropped or sold either one.
+        // These give them a source (see enemies.json loot tables).
+        consumables["cure_poison_potion"] = ConsumableData{
+            ConsumableEffect::CURE_POISON,
+            0,
+            "You drink a bitter antidote.",
+            "Antidote"
+        };
+
+        consumables["haste_potion"] = ConsumableData{
+            ConsumableEffect::GRANT_HASTE,
+            0,
+            "You drink a potion of haste.",
+            "Potion of Haste"
         };
     }
 

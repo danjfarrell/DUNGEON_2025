@@ -290,6 +290,8 @@ private:
         if (item_type == "greater_health_potion") return "G.HP";
         if (item_type == "greater_mana_potion") return "G.MP";
         if (item_type == "superior_health_potion") return "S.HP";
+        if (item_type == "cure_poison_potion") return "Antid";
+        if (item_type == "haste_potion") return "Haste";
 
         // Default: first 6 chars
         return item_type.substr(0, std::min<size_t>(6, item_type.length()));

@@ -12,6 +12,7 @@
 #include "ExperienceSystem.h"  // ADD THIS
 #include <algorithm>
 #include <random>
+#include <unordered_map>
 
 
 
@@ -214,12 +215,31 @@ private:
         }
     }
 
+    // Friendly names for dropped items that aren't equippable (potions and
+    // the like). CombatSystem doesn't hold a ConsumableSystem reference, so
+    // this is a small local lookup rather than plumbing one through -- keep
+    // it in sync with ConsumableSystem::initialize_consumables() display
+    // names if those change.
+    std::string display_name_for_item(const std::string& item_type) const {
+        static const std::unordered_map<std::string, std::string> names = {
+            { "health_potion", "Health Potion" },
+            { "greater_health_potion", "Greater Health Potion" },
+            { "superior_health_potion", "Superior Health Potion" },
+            { "mana_potion", "Mana Potion" },
+            { "greater_mana_potion", "Greater Mana Potion" },
+            { "cure_poison_potion", "Antidote" },
+            { "haste_potion", "Potion of Haste" },
+        };
+        auto it = names.find(item_type);
+        return it != names.end() ? it->second : item_type;
+    }
+
     void spawn_item(int x, int y, const std::string& item_type, int quantity) {
         Entity item = world->create_entity();
         world->add_component(item, Position{ x, y });
 
         const EquipmentDefinition* eq_def = equipment_db.get_item(item_type);
-        world->add_component(item, Name{ eq_def ? eq_def->display_name : item_type });
+        world->add_component(item, Name{ eq_def ? eq_def->display_name : display_name_for_item(item_type) });
         world->add_component(item, Item{ item_type, quantity });
         if (eq_def) {
             world->add_component(item, eq_def->item);
