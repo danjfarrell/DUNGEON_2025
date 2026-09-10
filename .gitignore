@@ -406,3 +406,4 @@ src/main_old.cpp
 src/main_refactored_old.cpp
 *.exe
 ouput/DUNGEON_AI.exe
+ouput/game_log.txt
