@@ -199,8 +199,9 @@ void LevelTransitionSystem::reposition_player_fov(Map* new_map, TileVisibility* 
         camera->center_on(pos->x, pos->y);
     }
 
-    // Compute FOV
-    vis->update_fov(pos->x, pos->y, config->gameplay.player_vision_range);
+    // Compute FOV (shadowcast: line-of-sight blocked by walls/closed doors)
+    vis->update_fov_shadowcast(pos->x, pos->y, config->gameplay.player_vision_range,
+        [new_map](int x, int y) { return !new_map->is_transparent(x, y); });
 
     // Sync minimap
     if (minimap) {

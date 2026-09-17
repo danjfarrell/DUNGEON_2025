@@ -489,7 +489,9 @@ void GameBootstrap::init_player(
 
     // Set camera and visibility
     camera->center_on(spawn_pos.x, spawn_pos.y);
-    tile_vis->update_fov(spawn_pos.x, spawn_pos.y, config.gameplay.player_vision_range);
+    Map* spawn_map = dungeon_manager->get_current_map();
+    tile_vis->update_fov_shadowcast(spawn_pos.x, spawn_pos.y, config.gameplay.player_vision_range,
+        [spawn_map](int x, int y) { return !spawn_map->is_transparent(x, y); });
     minimap->center_on(spawn_pos.x, spawn_pos.y);
     minimap->update_from_fov(tile_vis);
 }

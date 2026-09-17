@@ -250,7 +250,8 @@ void InputController::handle_player_movement(const SDL_Event& event, InputResult
                 pos->x = new_x;
                 pos->y = new_y;
                 camera->center_on(new_x, new_y);
-                tile_vis->update_fov(new_x, new_y, config->gameplay.player_vision_range);
+                tile_vis->update_fov_shadowcast(new_x, new_y, config->gameplay.player_vision_range,
+                    [this](int x, int y) { return !current_map->is_transparent(x, y); });
                 minimap->center_on(new_x, new_y);
                 minimap->update_from_fov(tile_vis);
             }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <functional>
 
 enum class VisibilityState {
     UNEXPLORED,  // Never seen (don't render)
@@ -83,8 +84,10 @@ public:
         }
     }
 
-    // Update FOV using simple circular algorithm
-    // You can replace this with shadowcasting later for line-of-sight
+    // Simple circular FOV -- sees through walls. Superseded by
+    // update_fov_shadowcast() below for real play; kept around as a cheap
+    // reference/debug fallback (e.g. reveal-ish behavior without walking
+    // the whole map like reveal_all()).
     void update_fov(int player_x, int player_y, int view_radius) {
         // First, mark all currently visible tiles as just explored
         clear_visible();
@@ -103,10 +106,14 @@ public:
         }
     }
 
-    // Advanced: Shadowcasting FOV (line-of-sight, blocked by walls)
-    // This is more complex but gives proper roguelike visibility
+    // Shadowcasting FOV (line-of-sight, blocked by walls). is_blocking is a
+    // std::function rather than a raw function pointer specifically so
+    // callers can pass a lambda that captures the current Map* (see
+    // Map::is_transparent()) -- a bare function pointer can't do that,
+    // which is why this went unused for a while despite being otherwise
+    // complete.
     void update_fov_shadowcast(int player_x, int player_y, int view_radius,
-        bool (*is_blocking)(int, int)) {
+        const std::function<bool(int, int)>& is_blocking) {
         clear_visible();
 
         // Player can always see their own tile
@@ -125,7 +132,7 @@ public:
 private:
     // Shadowcasting helper (recursive octant scanning)
     void cast_light(int cx, int cy, int row, float start, float end,
-        int radius, int octant, bool (*is_blocking)(int, int)) {
+        int radius, int octant, const std::function<bool(int, int)>& is_blocking) {
         if (start < end) return;
 
         float new_start = 0.0f;
