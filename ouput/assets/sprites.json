@@ -206,6 +206,36 @@
       "tile_y": 17,
       "layer": 3
     },
+    "item.rusty_dagger": {
+      "sheet_id": 0,
+      "tile_x": 18,
+      "tile_y": 18,
+      "layer": 3
+    },
+    "item.steel_sword": {
+      "sheet_id": 0,
+      "tile_x": 19,
+      "tile_y": 18,
+      "layer": 3
+    },
+    "item.leather_armor": {
+      "sheet_id": 0,
+      "tile_x": 14,
+      "tile_y": 19,
+      "layer": 3
+    },
+    "item.chainmail": {
+      "sheet_id": 0,
+      "tile_x": 12,
+      "tile_y": 19,
+      "layer": 3
+    },
+    "item.iron_ring": {
+      "sheet_id": 0,
+      "tile_x": 13,
+      "tile_y": 20,
+      "layer": 3
+    },
     "sword": {
       "sheet_id": 0,
       "tile_x": 18,

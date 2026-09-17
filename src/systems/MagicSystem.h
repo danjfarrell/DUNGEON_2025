@@ -9,6 +9,9 @@
 #include "../world/Map.h"
 #include "StatusEffectHelpers.h"
 #include <cmath>
+#include <vector>
+#include <algorithm>
+#include <random>
 
 class MagicSystem : public System {
 private:
@@ -17,8 +20,15 @@ private:
     Map* game_map;
     
 public:
-    MagicSystem(MessageLog* log, Map* map) 
+    MagicSystem(MessageLog* log, Map* map)
         : message_log(log), game_map(map) {}
+
+    // game_map was stored at construction time (level 1's map) and never
+    // updated when the player changes depth -- harmless while nothing
+    // dereferenced it, but blink now does (see cast_blink()). Called from
+    // LevelTransitionSystem::update_all_map_pointers() alongside the other
+    // systems that hold a Map*.
+    void set_map(Map* new_map) { game_map = new_map; }
     
     void update(ComponentManager& components, float dt) override {
         // Mana regen is per-TURN (see Mana::regen_per_turn), not per rendered frame.
@@ -193,8 +203,6 @@ private:
     
     void cast_utility_spell(ComponentManager& components, Entity caster,
                            const Spell* spell) {
-        // Only "haste" has a real mechanical effect so far; detect_enemies/
-        // blink/stone_skin remain message-only placeholders (Phase 3 work).
         if (spell->id == "haste") {
             StatusEffects::apply_haste(components, caster);
             if (message_log) {
@@ -203,8 +211,161 @@ private:
             return;
         }
 
+        if (spell->id == "stone_skin") {
+            StatusEffects::apply_stone_skin(components, caster);
+            if (message_log) {
+                message_log->add_success("Your skin turns to stone!");
+            }
+            return;
+        }
+
+        if (spell->id == "blink") {
+            cast_blink(components, caster, spell);
+            return;
+        }
+
+        if (spell->id == "detect_enemies") {
+            cast_detect_enemies(components, caster);
+            return;
+        }
+
         if (message_log) {
             message_log->add_info(spell->name + " effect!");
         }
+    }
+
+    // Teleports the caster to a random reachable tile within spell->range
+    // tiles (walkable per Map::is_walkable(), and not occupied by another
+    // BlocksMovement entity). Doesn't require a facing direction -- the
+    // player's Facing component is set once at spawn and never updated by
+    // InputController (see CLAUDE.md), so it can't be trusted for "blink
+    // forward"; "short random hop" matches the spell's own flavor text
+    // ("Teleport a short distance") just as well.
+    void cast_blink(ComponentManager& components, Entity caster, const Spell* spell) {
+        Position* pos = components.get_component<Position>(caster);
+        if (!pos || !game_map) {
+            if (message_log) {
+                message_log->add_warning("You can't find anywhere to blink to.");
+            }
+            return;
+        }
+
+        int radius = spell->range > 0 ? spell->range : 5;
+
+        std::vector<std::pair<int, int>> candidates;
+        for (int dy = -radius; dy <= radius; dy++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                if (dx == 0 && dy == 0) continue;
+                if (dx * dx + dy * dy > radius * radius) continue;
+
+                int tx = pos->x + dx;
+                int ty = pos->y + dy;
+                if (!game_map->is_walkable(tx, ty)) continue;
+                if (is_tile_occupied(components, tx, ty)) continue;
+
+                candidates.emplace_back(tx, ty);
+            }
+        }
+
+        if (candidates.empty()) {
+            if (message_log) {
+                message_log->add_warning("There's nowhere safe to blink to!");
+            }
+            return;
+        }
+
+        static std::mt19937 rng{ std::random_device{}() };
+        std::uniform_int_distribution<size_t> dist(0, candidates.size() - 1);
+        auto [new_x, new_y] = candidates[dist(rng)];
+
+        pos->x = new_x;
+        pos->y = new_y;
+
+        if (message_log) {
+            message_log->add_success("You blink through space!");
+        }
+    }
+
+    // Reports nearby living enemies (anything with EnemyType) by name,
+    // distance, and rough compass direction. Doesn't touch TileVisibility --
+    // this is "sense", not "see": it doesn't reveal map tiles, just tells
+    // the caster where things are, closest first.
+    void cast_detect_enemies(ComponentManager& components, Entity caster) {
+        Position* caster_pos = components.get_component<Position>(caster);
+        auto* positions = components.get_array<Position>();
+        auto* combat_stats = components.get_array<CombatStats>();
+
+        if (!caster_pos || !positions || !combat_stats) {
+            if (message_log) {
+                message_log->add_info("You sense nothing nearby.");
+            }
+            return;
+        }
+
+        struct Detected {
+            std::string name;
+            float distance;
+            int dx, dy;
+        };
+        std::vector<Detected> found;
+
+        for (Entity target : positions->get_entities()) {
+            if (target == caster) continue;
+            if (!components.has_component<EnemyType>(target)) continue;
+
+            Position* target_pos = positions->get(target);
+            CombatStats* target_stats = combat_stats->get(target);
+            if (!target_pos || !target_stats || !target_stats->is_alive()) continue;
+
+            int dx = target_pos->x - caster_pos->x;
+            int dy = target_pos->y - caster_pos->y;
+            float dist = std::sqrt(static_cast<float>(dx * dx + dy * dy));
+
+            Name* name = components.get_component<Name>(target);
+            found.push_back({ name ? name->name : "Something", dist, dx, dy });
+        }
+
+        if (!message_log) return;
+
+        if (found.empty()) {
+            message_log->add_info("You sense no enemies nearby.");
+            return;
+        }
+
+        std::sort(found.begin(), found.end(),
+            [](const Detected& a, const Detected& b) { return a.distance < b.distance; });
+
+        message_log->add_success("You sense " + std::to_string(found.size()) +
+            (found.size() == 1 ? " enemy nearby:" : " enemies nearby:"));
+
+        const size_t shown = std::min<size_t>(found.size(), 5);
+        for (size_t i = 0; i < shown; i++) {
+            const Detected& d = found[i];
+            message_log->add_info("  " + d.name + " - " +
+                std::to_string(static_cast<int>(d.distance)) + " tiles " +
+                compass_direction(d.dx, d.dy));
+        }
+        if (found.size() > shown) {
+            message_log->add_info("  ...and " + std::to_string(found.size() - shown) + " more.");
+        }
+    }
+
+    std::string compass_direction(int dx, int dy) const {
+        std::string ns = dy < 0 ? "north" : (dy > 0 ? "south" : "");
+        std::string ew = dx > 0 ? "east" : (dx < 0 ? "west" : "");
+        if (ns.empty() && ew.empty()) return "right on top of you";
+        return ns + ew;
+    }
+
+    bool is_tile_occupied(ComponentManager& components, int x, int y) const {
+        auto* positions = components.get_array<Position>();
+        auto* blockers = components.get_array<BlocksMovement>();
+        if (!positions || !blockers) return false;
+
+        for (Entity entity : blockers->get_entities()) {
+            Position* p = positions->get(entity);
+            if (p && p->x == x && p->y == y) return true;
+        }
+        return false;
     }
 };

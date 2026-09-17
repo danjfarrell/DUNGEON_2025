@@ -20,6 +20,7 @@ class Minimap;
 class MessageLog;
 class HudRenderer;
 class InputController;
+class MagicSystem;
 struct GameConfig;
 
 // ============================================================================
@@ -60,12 +61,16 @@ public:
     bool check_and_execute(Map*& current_map, TileVisibility*& tile_vis);
 
     // After a transition, Game can retrieve the updated pointers here.
-    // (Convenience — same values written into current_map/tile_vis above.)
+    // (Convenience ï¿½ same values written into current_map/tile_vis above.)
     Map* get_current_map() const { return current_map; }
     TileVisibility* get_tile_vis()   const { return tile_vis; }
 
     // Call after HudRenderer is created so transitions can update it too
     void set_hud_renderer(HudRenderer* hud) { hud_renderer = hud; }
+
+    // So depth changes keep MagicSystem's Map* current too (see
+    // MagicSystem::set_map()).
+    void set_magic_system(MagicSystem* ms) { magic_system = ms; }
 
 private:
     // Dependencies (non-owning)
@@ -80,6 +85,7 @@ private:
     MessageLog* message_log;
     InputController* input_controller;
     HudRenderer* hud_renderer = nullptr;
+    MagicSystem* magic_system = nullptr;
     const GameConfig* config;
     Entity           player;
 

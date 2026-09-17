@@ -11,6 +11,7 @@
 #include "../systems/RenderSystem.h"
 #include "../systems/Camera.h"
 #include "../systems/InputController.h"
+#include "../systems/MagicSystem.h"
 #include "../spawning/EnemySpawner.h"
 #include "../ui/Minimap.h"
 #include "../ui/MessageLog.h"
@@ -157,6 +158,7 @@ void LevelTransitionSystem::update_all_map_pointers(Map* new_map) {
     if (stair_system)      stair_system->set_map(new_map);
     if (minimap)           minimap->set_map(new_map);
     if (input_controller)  input_controller->set_map(new_map);
+    if (magic_system)      magic_system->set_map(new_map);
     if (hud_renderer)      hud_renderer->set_player(player); // refreshes entity ref
 
     LOG_INFO("All system map pointers updated");

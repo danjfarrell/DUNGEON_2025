@@ -7,6 +7,7 @@
 #include "Equipment.h"
 
 #include <string>
+#include <algorithm>
 #include <SDL3/SDL.h>
 
 // Position in the game world (tile coordinates)
@@ -173,6 +174,18 @@ struct Hasted {
 
     Hasted(int orig_speed = 100, int turns = 5)
         : original_speed(orig_speed), turns_remaining(turns) {
+    }
+};
+
+// Status effect: CombatStats::defense is boosted while active and restored
+// to original_defense when turns_remaining hits 0 (see
+// StatusEffectHelpers.h). Backs the "stone_skin" spell.
+struct StoneSkin {
+    int original_defense;
+    int turns_remaining;
+
+    StoneSkin(int orig_def = 0, int turns = 6)
+        : original_defense(orig_def), turns_remaining(turns) {
     }
 };
 

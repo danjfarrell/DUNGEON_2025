@@ -113,6 +113,7 @@ bool Game::initialize(unsigned int seed) {
         input_controller.get(), &config, player
     );
     level_transition->set_hud_renderer(hud_renderer.get());
+    level_transition->set_magic_system(magic_system);
 
     // Not registered with World (see StatusEffectSystem.h for why) --
     // ticked explicitly from update()'s per-turn block instead.

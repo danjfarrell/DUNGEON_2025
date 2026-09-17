@@ -6,6 +6,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cstring>
+#include <cstdio>
 // Defines the different sections of the screen
 struct UILayout {
     // Screen dimensions

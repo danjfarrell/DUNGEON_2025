@@ -86,7 +86,7 @@ public:
         int max_height = 40
     ) const;
 
-    void Map::dump_sprite_grid_to_log(
+    void dump_sprite_grid_to_log(
         std::function<std::string(int, int, TileType)> get_sprite_name,
         int start_x, int start_y,
         int width, int height

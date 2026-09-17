@@ -27,6 +27,7 @@ public:
     void process_turn(ComponentManager& components) {
         tick_poison(components);
         tick_haste(components);
+        tick_stone_skin(components);
     }
 
 private:
@@ -80,6 +81,31 @@ private:
                 components.remove_component<Hasted>(entity);
                 if (message_log && components.has_component<PlayerControlled>(entity)) {
                     message_log->add_info("You feel your haste fade.");
+                }
+            }
+        }
+    }
+
+    void tick_stone_skin(ComponentManager& components) {
+        auto* skins = components.get_array<StoneSkin>();
+        if (!skins) return;
+
+        auto& entities = skins->get_entities();
+        std::vector<Entity> to_process(entities.begin(), entities.end());
+
+        for (Entity entity : to_process) {
+            StoneSkin* s = components.get_component<StoneSkin>(entity);
+            if (!s) continue;
+
+            s->turns_remaining--;
+            if (s->turns_remaining <= 0) {
+                CombatStats* stats = components.get_component<CombatStats>(entity);
+                if (stats) {
+                    stats->defense = s->original_defense;
+                }
+                components.remove_component<StoneSkin>(entity);
+                if (message_log && components.has_component<PlayerControlled>(entity)) {
+                    message_log->add_info("Your stony skin softens back to normal.");
                 }
             }
         }

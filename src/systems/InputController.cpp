@@ -132,7 +132,30 @@ void InputController::handle_spell_and_item_hotkeys(const SDL_Event& event, Inpu
         if (SDL_GetModState() & SDL_KMOD_SHIFT) {
             // SHIFT + 1-5: Cast spells
             if (key_num >= 1 && key_num <= 5) {
-                magic_system->cast_spell(components, player, key_num - 1);
+                // cast_spell()'s return value used to be discarded here, so
+                // a spell never ended the player's turn -- enemies got no
+                // turn, mana never regenerated, and status effects never
+                // ticked down unless the same input cycle also moved the
+                // player. Every other action (movement, items) already
+                // costs a turn on success; spells should too.
+                if (magic_system->cast_spell(components, player, key_num - 1)) {
+                    result.turn_ended = true;
+
+                    // Most spells don't move the caster, so this is a no-op
+                    // recenter/recompute for them. blink does move the
+                    // caster and has no other way to get the camera/FOV/
+                    // minimap resynced -- see handle_player_movement()
+                    // below for the same three calls on ordinary movement.
+                    Position* player_pos = components.get_component<Position>(player);
+                    if (player_pos) {
+                        camera->center_on(player_pos->x, player_pos->y);
+                        tile_vis->update_fov_shadowcast(player_pos->x, player_pos->y,
+                            config->gameplay.player_vision_range,
+                            [this](int x, int y) { return !current_map->is_transparent(x, y); });
+                        minimap->center_on(player_pos->x, player_pos->y);
+                        minimap->update_from_fov(tile_vis);
+                    }
+                }
             }
         }
         else {
